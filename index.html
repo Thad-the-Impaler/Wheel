@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Wheel of Everything</title>
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --bg:#0a0b11;
+  --bg-2:#0f111a;
+  --panel:#141724;
+  --panel-2:#1a1e2e;
+  --panel-3:#232840;
+  --line:#2a3050;
+  --line-soft:#212639;
+  --text:#e9ecf6;
+  --text-2:#a6aec8;
+  --text-3:#6d7796;
+  --brand:#8b7cff;
+  --brand-2:#a894ff;
+  --brand-dim:rgba(139,124,255,.15);
+  --hot:#ff6ea9;
+  --warm:#ffb454;
+  --danger:#ff6b6b;
+  --ok:#4fd6a0;
+  --radius:14px;
+  --radius-sm:10px;
+  --radius-lg:20px;
+  --shadow:0 20px 55px -22px rgba(0,0,0,.9);
+  --shadow-sm:0 6px 18px -8px rgba(0,0,0,.75);
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --display:"Poppins","Avenir Next","Futura",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --panel-w:344px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  font-size:15px;
+  line-height:1.5;
+  overscroll-behavior:none;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1000px 620px at 8% -12%, rgba(139,124,255,.13), transparent 62%),
+    radial-gradient(880px 600px at 96% 110%, rgba(255,110,169,.09), transparent 60%),
+    radial-gradient(700px 500px at 60% 50%, rgba(255,180,84,.045), transparent 70%);
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+textarea{resize:none}
+/* Fallback size for any inline icon not given explicit dimensions, so a bare
+   svg() call can never balloon to the SVG default 300x150. */
+svg{width:1em;height:1em;flex:0 0 auto}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#2b3250;border-radius:8px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#3b4368;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+::selection{background:rgba(139,124,255,.32)}
+.hidden{display:none!important}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+#app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
+
+.topbar{
+  height:56px;flex:0 0 56px;display:flex;align-items:center;gap:9px;
+  padding:0 14px;border-bottom:1px solid var(--line-soft);
+  background:rgba(15,17,26,.82);backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);z-index:12;
+}
+.tb-brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:.2px;cursor:pointer;padding:6px 8px;border-radius:9px;transition:background .15s}
+.tb-brand:hover{background:var(--panel-2)}
+.tb-brand .mark{width:23px;height:23px;color:var(--brand);flex:0 0 23px}
+.tb-brand span{font-size:14px}
+.tb-spacer{flex:1}
+.tb-title{font-size:14.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:34vw}
+.tb-title .n{color:var(--text-3);font-weight:400;font-size:12.5px;margin-left:8px}
+
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:10px;
+  background:var(--panel-2);border:1px solid var(--line);color:var(--text-2);
+  font-size:13px;font-weight:500;transition:.16s var(--ease);white-space:nowrap;
+}
+.btn:hover{background:var(--panel-3);color:var(--text);border-color:#3a4268}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:15px;height:15px;flex:0 0 15px}
+.btn.primary{background:var(--brand);color:#0d0a1c;border-color:var(--brand);font-weight:600}
+.btn.primary:hover{background:var(--brand-2);color:#0d0a1c}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--panel-2)}
+.btn.danger{color:var(--danger);border-color:rgba(255,107,107,.28)}
+.btn.danger:hover{background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.5);color:#ff9494}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.btn.sm svg{width:13.5px;height:13.5px;flex:0 0 13.5px}
+.btn.icon{padding:8px;border-radius:9px}
+.btn.icon svg{width:16px;height:16px;flex:0 0 16px}
+.btn.icon.sm{padding:5px}
+.btn.on{background:var(--brand-dim);color:var(--brand-2);border-color:rgba(139,124,255,.4)}
+.btn[disabled]{opacity:.38;pointer-events:none}
+
+.sync{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-3);padding:7px 10px;border-radius:9px;transition:background .15s}
+.sync:hover{background:var(--panel-2)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:0 0 7px}
+.sync.on .dot{background:var(--ok);box-shadow:0 0 0 3px rgba(79,214,160,.15)}
+.sync.off .dot{background:var(--text-3)}
+.sync.err .dot{background:var(--danger)}
+.sync.sav .dot{background:var(--warm);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.28}}
+
+.view{flex:1;min-height:0;position:relative;overflow:hidden}
+.scroll{height:100%;overflow-y:auto;overflow-x:hidden}
+.wrap{max-width:1240px;margin:0 auto;padding:36px 26px 90px}
+.fade{animation:fade .3s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   HOME / GALLERY
+   ============================================================ */
+.hero{text-align:center;padding:22px 0 34px}
+.hero .crest{width:78px;height:78px;color:var(--brand);margin-bottom:18px;filter:drop-shadow(0 10px 26px rgba(139,124,255,.35));animation:crestspin 26s linear infinite}
+@keyframes crestspin{to{transform:rotate(360deg)}}
+.hero h1{font-family:var(--display);font-size:clamp(32px,5.4vw,50px);font-weight:600;letter-spacing:-.6px;line-height:1.08}
+.hero h1 em{font-style:normal;background:linear-gradient(96deg,var(--brand-2),var(--hot) 55%,var(--warm));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .tag{color:var(--text-3);margin-top:13px;font-size:14.5px;max-width:520px;margin-left:auto;margin-right:auto}
+.hero .foot{margin-top:24px;display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+
+.ghead{display:flex;align-items:flex-end;gap:14px;margin:8px 0 18px;flex-wrap:wrap}
+.ghead h2{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-.2px}
+.ghead .sp{flex:1}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:16px}
+.wcard{
+  background:linear-gradient(165deg,var(--panel) 0%,var(--bg-2) 100%);
+  border:1px solid var(--line);border-radius:var(--radius-lg);
+  overflow:hidden;text-align:left;transition:.22s var(--ease);position:relative;display:flex;flex-direction:column;
+}
+.wcard::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(340px 170px at 50% 0%,rgba(139,124,255,.12),transparent 72%);opacity:0;transition:opacity .22s}
+.wcard:hover{transform:translateY(-3px);border-color:#3c4470;box-shadow:var(--shadow)}
+.wcard:hover::after{opacity:1}
+.wcard .prev{height:158px;display:grid;place-items:center;background:radial-gradient(circle at 50% 46%,rgba(255,255,255,.045),transparent 62%);flex:0 0 158px;position:relative}
+.wcard .prev canvas{width:134px;height:134px;display:block;transition:transform .5s var(--ease)}
+.wcard:hover .prev canvas{transform:rotate(24deg)}
+.wcard .body{padding:15px 17px 17px;border-top:1px solid var(--line-soft)}
+.wcard h4{font-size:15.5px;font-weight:600;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wcard p{font-size:12.5px;color:var(--text-3);line-height:1.48;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+.wcard .meta{margin-top:11px;display:flex;gap:12px;font-size:11.5px;color:var(--text-3);flex-wrap:wrap;align-items:center}
+.wcard .meta span{display:inline-flex;align-items:center;gap:5px}
+.wcard .meta svg{width:13px;height:13px;flex:0 0 13px}
+.wcard .meta b{color:var(--text-2);font-weight:600}
+.wcard .rowact{position:absolute;top:10px;right:10px;display:flex;gap:5px;opacity:0;transition:opacity .15s}
+.wcard:hover .rowact,.wcard:focus-within .rowact{opacity:1}
+.wcard .rowact .btn{background:rgba(10,11,17,.85);backdrop-filter:blur(6px)}
+.newcard{
+  border:1.5px dashed var(--line);border-radius:var(--radius-lg);background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+  color:var(--text-3);min-height:250px;transition:.2s var(--ease);
+}
+.newcard:hover{border-color:var(--brand);color:var(--brand-2);background:var(--brand-dim);transform:translateY(-3px)}
+.newcard svg{width:26px;height:26px}
+.newcard span{font-size:13.5px;font-weight:500}
+
+.empty{text-align:center;padding:56px 20px;color:var(--text-3)}
+.empty svg{width:42px;height:42px;margin-bottom:14px;opacity:.4}
+.empty h3{font-size:16px;color:var(--text-2);font-weight:500;margin-bottom:6px}
+.empty p{font-size:13.5px;max-width:400px;margin:0 auto 18px;line-height:1.6}
+
+/* ============================================================
+   WHEEL VIEW
+   ============================================================ */
+.wv{height:100%;display:flex;min-height:0}
+.stage{
+  flex:1;min-width:0;position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:22px 22px 26px;gap:16px;overflow:hidden;
+}
+.stage-top{position:absolute;top:14px;left:16px;right:16px;display:flex;gap:8px;align-items:center;z-index:3;pointer-events:none}
+.stage-top > *{pointer-events:auto}
+.stage-top .sp{flex:1}
+
+.wheelbox{position:relative;flex:0 1 auto;display:grid;place-items:center;touch-action:manipulation}
+.wheelbox canvas{display:block;border-radius:50%;cursor:pointer;
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.05), 0 0 90px -30px rgba(139,124,255,.35)}
+.wheelbox.spinning canvas{cursor:default}
+
+.pointer{
+  position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:42px;height:52px;
+  z-index:4;pointer-events:none;filter:drop-shadow(0 6px 12px rgba(0,0,0,.6));
+  transform-origin:50% 12%;transition:transform .09s var(--ease);
+}
+.pointer svg{width:42px;height:52px}
+.pointer.tick{transform:translateX(-50%) rotate(-13deg)}
+
+.hub{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:23%;height:23%;min-width:74px;min-height:74px;border-radius:50%;
+  background:linear-gradient(160deg,#262c47,#141826);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.14);
+  display:grid;place-items:center;gap:1px;color:var(--text);
+  font-family:var(--display);font-weight:700;letter-spacing:.6px;font-size:clamp(11px,1.5vw,14px);
+  transition:.18s var(--ease);z-index:3;cursor:pointer;text-transform:uppercase;
+}
+.hub:hover{background:linear-gradient(160deg,#2f3654,#1a1f31);transform:translate(-50%,-50%) scale(1.045)}
+.hub:active{transform:translate(-50%,-50%) scale(.97)}
+.hub[disabled]{opacity:.55;pointer-events:none}
+.hub .sub{font-size:9px;letter-spacing:.9px;color:var(--text-3);font-weight:600}
+
+.stage-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;z-index:3}
+.spinbtn{
+  padding:13px 34px;border-radius:14px;font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:.8px;
+  text-transform:uppercase;color:#120b1e;border:0;
+  background:linear-gradient(96deg,var(--warm),var(--hot) 52%,var(--brand-2));
+  box-shadow:0 12px 30px -12px rgba(255,110,169,.7), inset 0 1px 0 rgba(255,255,255,.4);
+  transition:.18s var(--ease);
+}
+.spinbtn:hover{transform:translateY(-2px);box-shadow:0 18px 38px -14px rgba(255,110,169,.85), inset 0 1px 0 rgba(255,255,255,.4)}
+.spinbtn:active{transform:translateY(0)}
+.spinbtn[disabled]{opacity:.45;pointer-events:none;filter:saturate(.5)}
+
+.wtip{
+  position:absolute;z-index:6;pointer-events:none;padding:6px 11px;border-radius:9px;
+  background:rgba(10,11,17,.94);border:1px solid var(--line);font-size:12.5px;white-space:nowrap;
+  box-shadow:var(--shadow-sm);transform:translate(-50%,-140%);max-width:240px;overflow:hidden;text-overflow:ellipsis;
+}
+.wtip b{color:var(--text)}
+.wtip .w{color:var(--text-3);margin-left:6px;font-size:11px}
+
+.nowheel{text-align:center;color:var(--text-3);max-width:330px}
+.nowheel h3{font-size:16px;color:var(--text-2);margin-bottom:7px;font-weight:500}
+.nowheel p{font-size:13.5px;line-height:1.6;margin-bottom:16px}
+
+/* ============================================================
+   PANEL
+   ============================================================ */
+.panel{
+  width:var(--panel-w);flex:0 0 var(--panel-w);border-left:1px solid var(--line-soft);
+  background:rgba(15,17,26,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;min-height:0;z-index:8;
+}
+.panel.closed{display:none}
+.ptabs{display:flex;gap:4px;padding:10px 10px 0;flex:0 0 auto}
+.ptab{
+  flex:1;padding:9px 6px;border-radius:9px 9px 0 0;font-size:12.5px;font-weight:600;color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s;border-bottom:2px solid transparent;
+}
+.ptab svg{width:14px;height:14px;flex:0 0 14px}
+.ptab:hover{color:var(--text-2);background:var(--panel-2)}
+.ptab.on{color:var(--text);border-bottom-color:var(--brand);background:var(--panel-2)}
+.ptab .ct{font-size:10.5px;color:var(--text-3);background:var(--panel-3);padding:1px 6px;border-radius:999px}
+.pbody{flex:1;min-height:0;overflow-y:auto;padding:14px}
+.pfoot{flex:0 0 auto;padding:11px 14px;border-top:1px solid var(--line-soft);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#closepanel{display:none}
+@media(min-width:901px){ .pfoot.only-close{display:none} }
+
+.quickadd{display:flex;gap:8px;margin-bottom:12px}
+.quickadd .inp{flex:1;min-width:0}
+.qfilter{position:relative;margin-bottom:11px}
+.qfilter svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-3);pointer-events:none}
+.qfilter input{width:100%;padding:8px 11px 8px 33px;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;font-size:13px;outline:none;transition:.15s}
+.qfilter input:focus{border-color:var(--brand)}
+
+.elist{display:flex;flex-direction:column;gap:5px}
+.eitem{
+  display:flex;align-items:center;gap:10px;padding:7px 8px 7px 10px;border-radius:11px;
+  border:1px solid transparent;transition:.14s;position:relative;background:var(--panel);
+}
+.eitem:hover{border-color:var(--line);background:var(--panel-2)}
+.eitem.off{opacity:.42}
+.eitem.hit{animation:hitflash 1.1s var(--ease)}
+@keyframes hitflash{0%{background:var(--brand-dim);border-color:var(--brand)}100%{background:var(--panel);border-color:transparent}}
+.eitem .sw{width:34px;height:34px;border-radius:9px;flex:0 0 34px;overflow:hidden;position:relative;display:grid;place-items:center;cursor:pointer}
+.eitem .sw img{width:100%;height:100%;object-fit:cover;display:block}
+.eitem .sw .ini{font-family:var(--display);font-weight:700;font-size:14px;color:rgba(0,0,0,.55)}
+.eitem .sw .cam{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);opacity:0;transition:opacity .14s;color:#fff}
+.eitem .sw .cam svg{width:14px;height:14px}
+.eitem:hover .sw .cam{opacity:1}
+.eitem .tx{flex:1;min-width:0}
+.eitem .nm{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eitem .ds{font-size:11.5px;color:var(--text-3);display:flex;gap:9px;margin-top:1px}
+.eitem .ds span{display:inline-flex;align-items:center;gap:3px}
+.eitem .ds svg{width:11px;height:11px;flex:0 0 11px}
+.eitem .acts{display:flex;gap:2px;opacity:0;transition:opacity .14s;flex:0 0 auto}
+.eitem:hover .acts,.eitem:focus-within .acts{opacity:1}
+.eitem .acts .btn{padding:5px;border:0;background:transparent;color:var(--text-3)}
+.eitem .acts .btn:hover{background:var(--panel-3);color:var(--text)}
+.eitem .acts .btn svg{width:14px;height:14px;flex:0 0 14px}
+
+.sechead{
+  display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.7px;
+  text-transform:uppercase;color:var(--text-3);margin:16px 0 9px;
+}
+.sechead .sp{flex:1}
+.sechead:first-child{margin-top:0}
+
+.hitem{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;transition:.14s}
+.hitem:hover{background:var(--panel-2)}
+.hitem .sw{width:30px;height:30px;border-radius:8px;flex:0 0 30px;overflow:hidden;display:grid;place-items:center}
+.hitem .sw img{width:100%;height:100%;object-fit:cover;display:block}
+.hitem .sw .ini{font-family:var(--display);font-weight:700;font-size:12.5px;color:rgba(0,0,0,.55)}
+.hitem .tx{flex:1;min-width:0}
+.hitem .nm{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hitem .ago{font-size:11.5px;color:var(--text-3)}
+
+.stat{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.stat .nm{font-size:12.5px;width:96px;flex:0 0 96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-2)}
+.stat .bar{flex:1;height:7px;border-radius:99px;background:var(--panel-3);overflow:hidden}
+.stat .bar i{display:block;height:100%;border-radius:99px;transition:width .4s var(--ease)}
+.stat .n{font-size:11.5px;color:var(--text-3);width:44px;text-align:right;flex:0 0 44px;font-variant-numeric:tabular-nums}
+
+.setrow{display:flex;align-items:center;gap:11px;padding:10px 2px;border-bottom:1px solid var(--line-soft)}
+.setrow:last-child{border-bottom:0}
+.setrow .tx{flex:1;min-width:0}
+.setrow .tx b{display:block;font-size:13.5px;font-weight:500}
+.setrow .tx small{display:block;font-size:11.5px;color:var(--text-3);line-height:1.45;margin-top:2px}
+.sw-toggle{width:40px;height:23px;border-radius:99px;background:var(--panel-3);position:relative;flex:0 0 40px;transition:.18s var(--ease);border:1px solid var(--line)}
+.sw-toggle::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:var(--text-3);transition:.18s var(--ease)}
+.sw-toggle.on{background:var(--brand-dim);border-color:var(--brand)}
+.sw-toggle.on::after{transform:translateX(17px);background:var(--brand-2)}
+
+.slider{width:100%;-webkit-appearance:none;appearance:none;height:5px;border-radius:99px;background:var(--panel-3);outline:none;margin-top:4px}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--brand-2);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.slider::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:var(--brand-2);cursor:pointer}
+
+.palgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.palcard{padding:9px;border-radius:11px;border:1px solid var(--line);background:var(--bg-2);text-align:left;transition:.15s}
+.palcard:hover{border-color:#3a4268}
+.palcard.on{border-color:var(--brand);background:var(--brand-dim)}
+.palcard .sws{display:flex;gap:3px;margin-bottom:7px}
+.palcard .sws i{flex:1;height:15px;border-radius:4px}
+.palcard span{font-size:11.5px;color:var(--text-2)}
+
+/* ============================================================
+   RESULT OVERLAY
+   ============================================================ */
+.res{
+  position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:rgba(5,6,11,.84);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);animation:ovin .26s var(--ease);
+}
+.rescard{
+  width:100%;max-width:452px;background:linear-gradient(170deg,var(--panel),var(--bg-2));
+  border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:var(--shadow);
+  animation:resin .5s var(--ease);position:relative;
+}
+@keyframes resin{0%{opacity:0;transform:scale(.86) translateY(22px)}60%{transform:scale(1.02) translateY(0)}100%{opacity:1;transform:none}}
+.rescard .glow{position:absolute;inset:-40% -20% auto;height:70%;pointer-events:none;opacity:.5;filter:blur(52px)}
+.rescard .kicker{
+  position:relative;text-align:center;padding:19px 22px 0;font-size:11px;font-weight:700;letter-spacing:2.4px;
+  text-transform:uppercase;color:var(--text-3);
+}
+.resimg{
+  position:relative;margin:15px 22px 0;height:250px;border-radius:18px;overflow:hidden;
+  display:grid;place-items:center;border:1px solid rgba(255,255,255,.09);
+}
+.resimg img{width:100%;height:100%;object-fit:cover;display:block}
+.resimg .ini{font-family:var(--display);font-size:96px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:-3px;text-shadow:0 3px 14px rgba(0,0,0,.35)}
+.resimg .addimg{
+  position:absolute;bottom:10px;right:10px;background:rgba(10,11,17,.82);backdrop-filter:blur(6px);
+}
+.rescard h2{
+  position:relative;font-family:var(--display);font-size:clamp(24px,5.4vw,34px);font-weight:700;letter-spacing:-.6px;
+  text-align:center;padding:18px 24px 0;line-height:1.15;word-break:break-word;
+}
+.rescard .note{position:relative;text-align:center;padding:9px 30px 0;font-size:13.5px;color:var(--text-2);line-height:1.55;white-space:pre-wrap}
+.rescard .rmeta{position:relative;text-align:center;padding:12px 24px 0;font-size:12px;color:var(--text-3);display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.rescard .rmeta span{display:inline-flex;align-items:center;gap:5px}
+.rescard .rmeta svg{width:12px;height:12px;flex:0 0 12px}
+.rescard .racts{position:relative;padding:20px 22px 22px;display:flex;gap:9px;flex-wrap:wrap}
+.rescard .racts .btn{flex:1;justify-content:center}
+.rescard .racts .btn.wide{flex:1 0 100%}
+#confetti{position:fixed;inset:0;z-index:95;pointer-events:none}
+
+/* ============================================================
+   OVERLAYS / MODALS
+   ============================================================ */
+.ov{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:22px;
+  background:rgba(5,6,11,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);animation:ovin .2s var(--ease)}
+@keyframes ovin{from{opacity:0}to{opacity:1}}
+.modal{
+  width:100%;max-width:490px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow);animation:modin .26s var(--ease);
+  max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
+}
+@keyframes modin{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.modal.wide{max-width:680px}
+.mod-h{padding:19px 22px 14px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.mod-h h3{font-size:17px;font-weight:600;flex:1}
+.mod-h .sub{font-size:12.5px;color:var(--text-3);margin-top:3px;font-weight:400}
+.mod-b{padding:20px 22px;overflow-y:auto;flex:1;min-height:0}
+.mod-f{padding:14px 22px 18px;display:flex;gap:9px;justify-content:flex-end;border-top:1px solid var(--line-soft);flex:0 0 auto;flex-wrap:wrap}
+.mod-f .sp{flex:1}
+
+.field{margin-bottom:15px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:7px}
+.field .hint{font-size:12px;color:var(--text-3);margin-top:7px;line-height:1.55}
+.inp{
+  width:100%;padding:11px 13px;background:var(--bg-2);border:1px solid var(--line);
+  border-radius:var(--radius-sm);font-size:14px;outline:none;transition:.15s;
+}
+.inp:focus{border-color:var(--brand);background:var(--bg)}
+.inp::placeholder{color:#4a5470}
+textarea.inp{min-height:88px;line-height:1.6;resize:vertical}
+.row2{display:flex;gap:11px}
+.row2 > *{flex:1;min-width:0}
+
+.imgbox{display:flex;flex-direction:column;gap:10px}
+.img-prev{
+  height:150px;border-radius:var(--radius-sm);border:1.5px dashed var(--line);
+  display:grid;place-items:center;gap:7px;color:#4a5470;background:var(--bg-2);overflow:hidden;position:relative;
+}
+.img-prev svg{width:26px;height:26px}
+.img-prev span{font-size:12.5px}
+.img-prev.has{border-style:solid}
+.img-prev img{width:100%;height:100%;object-fit:cover;display:block}
+.img-acts{display:flex;gap:8px;flex-wrap:wrap}
+
+.steps{font-size:13.5px;color:var(--text-2);line-height:1.62;padding-left:18px}
+.steps li{margin-bottom:11px}
+.steps li b{color:var(--text)}
+.steps code{background:var(--bg);padding:1.5px 6px;border-radius:5px;font-size:12px;font-family:var(--mono);color:var(--brand-2)}
+pre.code{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;
+  font-family:var(--mono);font-size:11.5px;line-height:1.62;
+  color:#9db0d4;overflow-x:auto;white-space:pre;max-height:250px;overflow-y:auto;
+}
+.checkrow{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--text-2);cursor:pointer;padding:5px 0}
+.checkrow input{width:16px;height:16px;accent-color:var(--brand);flex:0 0 16px}
+
+/* toast */
+.toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:130;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{
+  padding:11px 18px;border-radius:11px;background:var(--panel-3);border:1px solid var(--line);
+  box-shadow:var(--shadow);font-size:13.5px;animation:tin .26s var(--ease);display:flex;align-items:center;gap:9px;max-width:88vw;
+}
+.toast svg{width:15px;height:15px;flex:0 0 15px}
+.toast.ok{color:var(--ok)}.toast.err{color:var(--danger)}
+@keyframes tin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;flex:0 0 15px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* presentation mode */
+body.present .topbar,body.present .panel,body.present .stage-top{display:none}
+body.present .stage{padding:14px}
+#exitpresent{display:none;position:fixed;top:14px;right:14px;z-index:20;background:rgba(20,23,36,.8);backdrop-filter:blur(8px)}
+body.present #exitpresent{display:inline-flex}
+
+/* mobile */
+.panel-toggle{display:none}
+@media(max-width:900px){
+  :root{--panel-w:100%}
+  .wv{flex-direction:column}
+  .stage{flex:1 1 auto;padding:14px 14px 18px}
+  .panel{
+    position:absolute;left:0;right:0;bottom:0;top:0;transform:translateY(100%);
+    transition:transform .26s var(--ease);border-left:0;border-top:1px solid var(--line);
+    background:rgba(10,11,17,.97);
+  }
+  .panel.open{transform:none}
+  .panel.closed{display:flex}
+  .panel-toggle{display:inline-flex}
+  .wrap{padding:26px 15px 80px}
+  .tb-title{max-width:40vw}
+  .tb-brand span{display:none}
+  .sync span:last-child{display:none}
+  .sync{padding:8px}
+  .resimg{height:200px}
+  #hidepanel{display:none}
+  #closepanel{display:inline-flex}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="overlays"></div>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="filepick" accept="image/*" class="hidden">
+<input type="file" id="jsonpick" accept="application/json,.json" class="hidden">
+
+<script>
+"use strict";
+/* ============================================================================
+   THE WHEEL OF EVERYTHING
+   Single-file randomizer: build any number of wheels, add entries forever,
+   spin, and get a name + picture for whatever it lands on.
+
+   ARCHITECTURE
+   - All state lives in DB (in-memory maps) and is mirrored to localStorage.
+   - Optional Supabase backend gives multi-device sync + live collaboration.
+     One row per node (wheel or slice) so two people editing different wheels
+     never overwrite each other and realtime payloads stay small.
+   - Everything must remain in this one file: the app is opened via file://
+     from iCloud Drive, where sibling .css/.js files are blocked by Chrome.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------- constants */
+const LS = { data:"woe.data.v1", cloud:"woe.cloud.v1", queue:"woe.queue.v1", prefs:"woe.prefs.v1" };
+const TAU = Math.PI*2;
+const POINTER = -Math.PI/2;      // the pointer sits at 12 o'clock
+const MAX_HISTORY = 120;         // per wheel, trimmed on write
+const LABEL_FONT = "'Poppins','Avenir Next',-apple-system,sans-serif";
+const LABEL_REF  = 100;          // measure once at this size, then scale to fit
+
+/** Width of a name at LABEL_REF px. The font is fixed, so this only ever needs
+ *  working out once per distinct name rather than once per label per frame. */
+const _labelW = new Map();
+function labelWidth(ctx, text){
+  let w = _labelW.get(text);
+  if(w === undefined){
+    if(_labelW.size > 4000) _labelW.clear();
+    ctx.font = `600 ${LABEL_REF}px ${LABEL_FONT}`;
+    w = ctx.measureText(text).width;
+    _labelW.set(text, w);
+  }
+  return w;
+}
+
+const PALETTES = {
+  carnival:{ label:"Carnival", colors:["#ff6b6b","#ffa94d","#ffd43b","#69db7c","#38d9a9","#4dabf7","#9775fa","#f783ac"] },
+  sunset:  { label:"Sunset",   colors:["#ffd166","#ffa552","#ff7f51","#f4614f","#d94f7c","#a44fa0","#ff9770","#ffbf69"] },
+  aurora:  { label:"Aurora",   colors:["#4cc9f0","#4895ef","#4361ee","#7f5af0","#9d4edd","#38d9a9","#57cc99","#80ffdb"] },
+  candy:   { label:"Candy",    colors:["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff","#ffc6ff"] },
+  ember:   { label:"Ember",    colors:["#f9c74f","#f8961e","#f3722c","#f94144","#e5615e","#ffb703","#fb8500","#ef476f"] },
+  ocean:   { label:"Ocean",    colors:["#a8dadc","#7ad0d6","#48cae4","#00b4d8","#3f88c5","#5390d9","#64dfdf","#80ced7"] },
+  meadow:  { label:"Meadow",   colors:["#b7e4c7","#95d5b2","#74c69d","#a3d977","#d8f3a3","#ffe066","#c7f9cc","#8ecae6"] },
+  dusk:    { label:"Dusk",     colors:["#8b7cff","#a894ff","#c77dff","#e0aaff","#7b8cde","#6f86d6","#9d8df1","#b8a4ff"] },
+  vintage: { label:"Vintage",  colors:["#d9bf77","#c98c5e","#a8763e","#8c9a6b","#6b8f71","#b56576","#e0a458","#cfae70"] },
+  vapor:   { label:"Vapor",    colors:["#ff71ce","#01cdfe","#05ffa1","#b967ff","#fffb96","#ff9de2","#7af5ff","#c2a5ff"] },
+};
+const PAL_KEYS = Object.keys(PALETTES);
+
+const DEFAULT_OPTS = {
+  palette:"carnival",
+  weighted:false,     // slice size follows each entry's weight
+  eliminate:false,    // the winner retires from the wheel after landing
+  duration:5.5,       // seconds of spin
+  labels:true,        // draw entry names on the wedges
+  shuffleColors:false,
+};
+
+/* ------------------------------------------------------------------- icons */
+const ICON = {
+  wheel:'<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" stroke="currentColor" stroke-width="1.3" opacity=".75"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/>',
+  plus:'<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+  x:'<path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  check:'<path d="m4.5 12.5 5 5 10-11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
+  trash:'<path d="M4 7h16M9.5 7V5.2a1.2 1.2 0 0 1 1.2-1.2h2.6a1.2 1.2 0 0 1 1.2 1.2V7M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  pencil:'<path d="M4 20.5 4.9 16 16.4 4.5a2 2 0 0 1 2.8 0l.3.3a2 2 0 0 1 0 2.8L8 19.1 4 20.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+  image:'<rect x="3.5" y="5" width="17" height="14" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="10" r="1.6" fill="currentColor"/><path d="m4.5 17 4.6-4.4a1.6 1.6 0 0 1 2.2 0L15 16m1.6-1.6a1.6 1.6 0 0 1 2.2 0l1.2 1.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  camera:'<path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h2l1.2-2h7.6L17 7h2a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5v-9Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="12.6" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  cloud:'<path d="M7.2 18.5A4.2 4.2 0 0 1 7 10.1a5.3 5.3 0 0 1 10.2-1.2A3.9 3.9 0 0 1 17 18.5H7.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+  search:'<circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m15.6 15.6 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+  left:'<path d="M14.5 5 8 12l6.5 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  right:'<path d="M9.5 5 16 12l-6.5 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  up:'<path d="M5 14.5 12 8l7 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  down:'<path d="M5 9.5 12 16l7-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  shuffle:'<path d="M3 6.5h3.4l3 5m8.6 6.5h-3.4l-3-5M3 17.5h3.4l3-5m8.6-6.5h-3.4l-3 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m17.5 4 2.6 2.5-2.6 2.5M17.5 15l2.6 2.5-2.6 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  download:'<path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  upload:'<path d="M12 20V9m0 0 4 4M12 9l-4 4M5 5h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  copy:'<rect x="8.5" y="8.5" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15.5 5.5v-1a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+  clock:'<circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.4V12l3.2 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  chart:'<path d="M4 20h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="5.5" y="11" width="3.6" height="6.5" rx="1" fill="currentColor" opacity=".85"/><rect x="10.2" y="6.5" width="3.6" height="11" rx="1" fill="currentColor" opacity=".85"/><rect x="14.9" y="13.5" width="3.6" height="4" rx="1" fill="currentColor" opacity=".85"/>',
+  sliders:'<path d="M4 8h9M17 8h3M4 16h3M11 16h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="16" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+  list:'<path d="M9 6.5h11M9 12h11M9 17.5h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="4.8" cy="6.5" r="1.3" fill="currentColor"/><circle cx="4.8" cy="12" r="1.3" fill="currentColor"/><circle cx="4.8" cy="17.5" r="1.3" fill="currentColor"/>',
+  sound:'<path d="M5 9.5h3l4-3.4v11.8l-4-3.4H5a.9.9 0 0 1-.9-.9v-3.2A.9.9 0 0 1 5 9.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15.4 9a4.2 4.2 0 0 1 0 6M17.9 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  mute:'<path d="M5 9.5h3l4-3.4v11.8l-4-3.4H5a.9.9 0 0 1-.9-.9v-3.2A.9.9 0 0 1 5 9.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m16 9.6 4 4.8m0-4.8-4 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  expand:'<path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  eye:'<path d="M2.8 12S6.4 6 12 6s9.2 6 9.2 6-3.6 6-9.2 6-9.2-6-9.2-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.7" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+  eyeoff:'<path d="M4.6 8.3C3.4 9.6 2.8 12 2.8 12s3.6 6 9.2 6c1.6 0 3-.5 4.2-1.2M9.4 6.4A8.3 8.3 0 0 1 12 6c5.6 0 9.2 6 9.2 6a15 15 0 0 1-2.4 3M10 10a2.7 2.7 0 0 0 3.8 3.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m4 4 16 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  undo:'<path d="M4.5 9.5h9a5.5 5.5 0 0 1 0 11H9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 5 3.6 9.5 8 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  scale:'<path d="M12 4v16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 8h14M5 8 2.6 14h4.8L5 8Zm14 0-2.4 6h4.8L19 8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8.5 20h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  sparkle:'<path d="M12 3.5 13.7 9l5.5 1.7-5.5 1.7L12 18l-1.7-5.6L4.8 10.7 10.3 9 12 3.5Z" fill="currentColor" opacity=".9"/><path d="m18.6 15.4.8 2.3 2.3.8-2.3.8-.8 2.3-.8-2.3-2.3-.8 2.3-.8.8-2.3Z" fill="currentColor" opacity=".6"/>',
+  dice:'<rect x="4" y="4" width="16" height="16" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+  more:'<circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor"/>',
+  play:'<path d="M8 5.5 18.5 12 8 18.5v-13Z" fill="currentColor"/>',
+  info:'<circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="8" r="1.15" fill="currentColor"/>',
+};
+/* Some glyphs aren't visually centred in the 24x24 box, so they look off
+   inside round/square buttons. These offsets shift them back to centre. */
+const NUDGE = { left:[1,0], right:[-1,0], up:[0,1], down:[0,-1], cloud:[.1,-.6], play:[.6,0], copy:[-.5,0] };
+const svg = (n, cls="") => {
+  const g = ICON[n]||"";
+  const k = NUDGE[n];
+  return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${
+    k ? `<g transform="translate(${k[0]} ${k[1]})">${g}</g>` : g}</svg>`;
+};
+
+/* ----------------------------------------------------------------- helpers */
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const uid = p => p+"_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const now = () => new Date().toISOString();
+const h = s => String(s??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const debounce = (fn,ms) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
+const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+
+/** Unbiased float in [0,1) from the CSPRNG — a wheel deserves better than
+ *  Math.random's implementation-defined quality. */
+function rnd(){
+  const b = new Uint32Array(1);
+  crypto.getRandomValues(b);
+  return b[0] / 4294967296;
+}
+const rndBetween = (a,b)=>a+rnd()*(b-a);
+
+/** Perceived luminance, so slice labels stay readable on any palette. */
+function lum(hex){
+  const c = hex.replace("#","");
+  const n = c.length===3 ? c.split("").map(x=>x+x).join("") : c;
+  const r = parseInt(n.slice(0,2),16)/255, g = parseInt(n.slice(2,4),16)/255, b = parseInt(n.slice(4,6),16)/255;
+  const f = v => v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4);
+  return .2126*f(r) + .7152*f(g) + .0722*f(b);
+}
+const inkOn = hex => lum(hex) > .45 ? "rgba(18,14,30,.92)" : "rgba(255,255,255,.96)";
+function shade(hex, amt){
+  const c = hex.replace("#",""); const n = c.length===3 ? c.split("").map(x=>x+x).join("") : c;
+  const p = [0,2,4].map(i=>{
+    let v = parseInt(n.slice(i,i+2),16);
+    v = amt>0 ? v + (255-v)*amt : v * (1+amt);
+    return clamp(Math.round(v),0,255).toString(16).padStart(2,"0");
+  });
+  return "#"+p.join("");
+}
+
+function fmtAgo(iso){
+  const s = (Date.now() - new Date(iso).getTime())/1000;
+  if(!isFinite(s)) return "";
+  if(s < 45) return "just now";
+  if(s < 3600) return Math.round(s/60)+"m ago";
+  if(s < 86400) return Math.round(s/3600)+"h ago";
+  if(s < 86400*7) return Math.round(s/86400)+"d ago";
+  return new Date(iso).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+}
+const plural = (n,one,many)=>`${n} ${n===1?one:(many||one+"s")}`;
+
+function toast(msg, kind=""){
+  const el = document.createElement("div");
+  el.className = "toast "+kind;
+  el.innerHTML = (kind==="ok"?svg("check"):kind==="err"?svg("x"):"") + `<span>${h(msg)}</span>`;
+  $("#toasts").appendChild(el);
+  setTimeout(()=>{ el.style.transition="opacity .3s,transform .3s"; el.style.opacity="0"; el.style.transform="translateY(8px)";
+    setTimeout(()=>el.remove(),320); }, 2600);
+}
+
+/* ============================================================================
+   DATA LAYER
+   Nodes are flat: { id, type:'wheel'|'slice', wheelId, data:{...},
+                     updatedAt, deleted }
+   ============================================================================ */
+const DB = {
+  wheels:new Map(),
+  slices:new Map(),
+  // Fresh per page load, NOT per browser: this only suppresses the echo of
+  // writes made by *this* page instance. Sharing it across tabs would make two
+  // windows on one machine ignore each other's live updates.
+  clientId: uid("c"),
+
+  all(){ return [...this.wheels.values(), ...this.slices.values()]; },
+  get(id){ return this.wheels.get(id) || this.slices.get(id) || null; },
+
+  put(node, {local=true}={}){
+    if(!node || !node.id || !node.type) return;
+    const n = normalize(node);
+    const map = n.type==="wheel" ? this.wheels : this.slices;
+    const prev = map.get(n.id);
+    // last-write-wins per node, by timestamp
+    if(prev && !local && prev.updatedAt > n.updatedAt) return;
+    map.set(n.id, n);
+    if(local){ n.updatedAt = now(); Cloud.push(n); }
+    persist();
+  },
+
+  remove(id, {local=true}={}){
+    const n = this.get(id); if(!n) return;
+    n.deleted = true; n.updatedAt = now();
+    if(n.type==="wheel"){
+      for(const s of this.slices.values()) if(s.wheelId===id && !s.deleted){
+        s.deleted = true; s.updatedAt = now(); if(local) Cloud.push(s);
+      }
+    }
+    if(local) Cloud.push(n);
+    persist();
+  },
+
+  wheelList(){
+    return [...this.wheels.values()].filter(w=>!w.deleted)
+      .sort((a,b)=>(a.data.order??0)-(b.data.order??0) || (a.data.name||"").localeCompare(b.data.name||""));
+  },
+  /** Every entry, listed the way a person reads a list: alphabetically. */
+  slicesOf(wid){
+    return [...this.slices.values()].filter(s=>!s.deleted && s.wheelId===wid).sort(byName);
+  },
+  /** Entries actually on the wheel right now, in their scattered wheel order.
+   *  Deliberately NOT the list order — neighbouring names shouldn't end up as
+   *  neighbouring wedges. */
+  liveOf(wid){
+    return [...this.slices.values()]
+      .filter(s=>!s.deleted && s.wheelId===wid && s.data.enabled!==false)
+      .sort(bySpot);
+  },
+};
+
+const byName = (a,b) =>
+  (a.data.name||"").localeCompare(b.data.name||"", undefined, {numeric:true, sensitivity:"base"})
+  || (a.data.createdAt||"").localeCompare(b.data.createdAt||"");
+// `spot` is a fixed random number per entry; sorting on it scatters the wedges
+// and keeps them put between spins. Ties fall back to the id so every device
+// draws the same wheel.
+const bySpot = (a,b) => (a.data.spot - b.data.spot) || a.id.localeCompare(b.id);
+
+function normalize(n){
+  const d = n.data || {};
+  if(n.type==="wheel"){
+    return {
+      id:n.id, type:"wheel", wheelId:null, deleted:!!n.deleted, updatedAt:n.updatedAt||now(),
+      data:{
+        name: d.name || "Untitled wheel",
+        desc: d.desc || "",
+        order: d.order ?? 0,
+        createdAt: d.createdAt || now(),
+        spins: d.spins ?? 0,
+        opts: (()=>{
+          const o = { ...DEFAULT_OPTS, ...(d.opts||{}) };
+          o.labels = typeof o.labels === "string" ? o.labels !== "never" : o.labels !== false;
+          return o;
+        })(),
+        history: Array.isArray(d.history) ? d.history.slice(0,MAX_HISTORY) : [],
+      },
+    };
+  }
+  return {
+    id:n.id, type:"slice", wheelId:n.wheelId||null, deleted:!!n.deleted, updatedAt:n.updatedAt||now(),
+    data:{
+      name: d.name || "",
+      image: d.image || "",
+      note: d.note || "",
+      color: d.color || "",
+      weight: Number.isFinite(+d.weight) && +d.weight > 0 ? +d.weight : 1,
+      enabled: d.enabled !== false,
+      hits: d.hits ?? 0,
+      spot: Number.isFinite(+d.spot) ? +d.spot : rnd(),
+      createdAt: d.createdAt || now(),
+    },
+  };
+}
+
+const persist = debounce(()=>{
+  try{ localStorage.setItem(LS.data, JSON.stringify(DB.all())); }
+  catch(err){ console.warn("local save failed", err); toast("This device is out of storage — trim some images","err"); }
+}, 240);
+
+function loadLocal(){
+  let raw = [];
+  try{ raw = JSON.parse(localStorage.getItem(LS.data)||"[]"); }catch{ raw = []; }
+  raw.forEach(n=>{
+    const norm = normalize(n);
+    (norm.type==="wheel" ? DB.wheels : DB.slices).set(norm.id, norm);
+  });
+}
+
+/* ------------------------------------------------------------------- prefs */
+const Prefs = {
+  _c:null,
+  get(){ if(!this._c){ try{ this._c=JSON.parse(localStorage.getItem(LS.prefs))||{}; }catch{ this._c={}; } } return this._c; },
+  set(k,v){ const p=this.get(); p[k]=v; try{ localStorage.setItem(LS.prefs,JSON.stringify(p)); }catch{} },
+};
+const prefOn = (k, dflt=true) => { const v = Prefs.get()[k]; return v===undefined ? dflt : !!v; };
+
+/* ============================================================================
+   CLOUD (Supabase) — optional. Table `wheel_nodes`, one row per node.
+   ============================================================================ */
+/** Supabase's dashboard shows several forms of the project URL. The client
+ *  wants the bare origin, so trim the REST/auth suffixes people paste in. */
+function sanitizeSupabaseUrl(raw){
+  let u = String(raw||"").trim();
+  u = u.replace(/\/+$/,"");
+  u = u.replace(/\/(rest|auth|storage|realtime)\/v\d+.*$/i,"");
+  return u.replace(/\/+$/,"");
+}
+
+const Cloud = {
+  cfg:null, client:null, status:"off", statusMsg:"", chan:null, _queue:[], _libLoading:null,
+
+  init(){
+    try{ this.cfg = JSON.parse(localStorage.getItem(LS.cloud)||"null"); }catch{ this.cfg=null; }
+    try{ this._queue = JSON.parse(localStorage.getItem(LS.queue)||"[]"); }catch{ this._queue=[]; }
+    if(this.cfg && this.cfg.url && this.cfg.key) this.connect();
+    else this.setStatus("off");
+  },
+
+  setStatus(s,msg){ this.status=s; this.statusMsg=msg||""; refreshSyncChip(); },
+
+  async loadLib(){
+    if(window.supabase && window.supabase.createClient) return true;
+    if(this._libLoading) return this._libLoading;
+    this._libLoading = new Promise(res=>{
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
+      s.onload = ()=>res(!!(window.supabase&&window.supabase.createClient));
+      s.onerror = ()=>res(false);
+      document.head.appendChild(s);
+    });
+    return this._libLoading;
+  },
+
+  async connect(){
+    this.setStatus("connecting");
+    const ok = await this.loadLib();
+    if(!ok){ this.setStatus("err","Could not load the sync library (offline?)"); return; }
+    try{
+      const url = sanitizeSupabaseUrl(this.cfg.url);
+      if(url !== this.cfg.url){            // repair a previously saved bad URL
+        this.cfg.url = url;
+        localStorage.setItem(LS.cloud, JSON.stringify(this.cfg));
+      }
+      this.client = window.supabase.createClient(url, this.cfg.key, {
+        realtime:{ params:{ eventsPerSecond:8 } },
+        auth:{ persistSession:false },
+      });
+      await this.pull();
+      this.subscribe();
+      this.setStatus("on");
+      this.flush();
+    }catch(err){
+      console.error(err);
+      this.setStatus("err", err.message||"Connection failed");
+    }
+  },
+
+  async pull(){
+    const { data, error } = await this.client.from("wheel_nodes").select("*");
+    if(error) throw error;
+    (data||[]).forEach(applyRow);
+    persist(); scheduleRender();
+  },
+
+  subscribe(){
+    if(this.chan) try{ this.client.removeChannel(this.chan); }catch{}
+    this.chan = this.client.channel("wheel-sync")
+      .on("postgres_changes", { event:"*", schema:"public", table:"wheel_nodes" }, payload=>{
+        const row = payload.new;
+        // Guard against truncated / oversized realtime payloads: refetch instead
+        // of poisoning the store with partial data.
+        if(payload.errors || !row || !row.id || !row.data){ this.pull().catch(()=>{}); return; }
+        if(row.client_id === DB.clientId) return;
+        applyRow(row); persist(); scheduleRender();
+      })
+      .subscribe(status=>{
+        if(status==="SUBSCRIBED") this.setStatus("on");
+        else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT") this.setStatus("err","Realtime disconnected");
+      });
+  },
+
+  push(node){
+    if(!this.cfg) return;
+    this._queue = this._queue.filter(q=>q.id!==node.id);
+    this._queue.push(toRow(node));
+    try{ localStorage.setItem(LS.queue, JSON.stringify(this._queue)); }catch{}
+    this.flushSoon();
+  },
+
+  flushSoon:null, // assigned below
+
+  async flush(){
+    if(!this.client || !this._queue.length) return;
+    const batch = this._queue.slice();
+    this.setStatus("saving");
+    const { error } = await this.client.from("wheel_nodes").upsert(batch, { onConflict:"id" });
+    if(error){
+      console.warn("sync failed", error);
+      this.setStatus("err", error.message);
+      return; // queue is preserved; retried on next change or reconnect
+    }
+    this._queue = this._queue.filter(q=>!batch.find(b=>b.id===q.id && b.updated_at===q.updated_at));
+    try{ localStorage.setItem(LS.queue, JSON.stringify(this._queue)); }catch{}
+    this.setStatus("on");
+  },
+
+  save(cfg){
+    localStorage.setItem(LS.cloud, JSON.stringify(cfg));
+    this.cfg = cfg;
+    if(cfg && cfg.url && cfg.key) this.connect(); else this.setStatus("off");
+  },
+
+  disconnect(){
+    localStorage.removeItem(LS.cloud);
+    if(this.chan) try{ this.client.removeChannel(this.chan); }catch{}
+    this.cfg=null; this.client=null; this.setStatus("off");
+  },
+
+  /** Push every local node — used after first-time setup. */
+  async pushAll(){
+    if(!this.client) return;
+    const rows = DB.all().map(toRow);
+    for(let i=0;i<rows.length;i+=100){
+      const { error } = await this.client.from("wheel_nodes").upsert(rows.slice(i,i+100), { onConflict:"id" });
+      if(error) throw error;
+    }
+  },
+
+  /** Upload an image file to Supabase Storage; falls back to a data URL. */
+  async uploadImage(blob, ext){
+    if(!this.client || !this.cfg) return null;
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error } = await this.client.storage.from("wheel-images").upload(path, blob, {
+      contentType: blob.type || "image/jpeg", upsert:false,
+    });
+    if(error){ console.warn("image upload failed", error); return null; }
+    const { data } = this.client.storage.from("wheel-images").getPublicUrl(path);
+    return data?.publicUrl || null;
+  },
+};
+Cloud.flushSoon = debounce(()=>Cloud.flush(), 700);
+
+function toRow(n){
+  return { id:n.id, type:n.type, wheel_id:n.wheelId, data:n.data,
+           deleted:!!n.deleted, updated_at:n.updatedAt, client_id:DB.clientId };
+}
+function applyRow(row){
+  DB.put({ id:row.id, type:row.type, wheelId:row.wheel_id, data:row.data,
+           deleted:row.deleted, updatedAt:row.updated_at }, { local:false });
+}
+
+/* ============================================================================
+   MUTATIONS
+   ============================================================================ */
+function createWheel(name, seed){
+  const id = uid("w");
+  const order = DB.wheelList().reduce((m,w)=>Math.max(m,w.data.order??0), 0) + 1;
+  DB.put({ id, type:"wheel", data:{ name:name||"Untitled wheel", order, createdAt:now(), opts:{...DEFAULT_OPTS} } });
+  (seed||[]).forEach(n=>createSlice(id, n));
+  return id;
+}
+function createSlice(wid, name){
+  const id = uid("s");
+  DB.put({ id, type:"slice", wheelId:wid,
+           data:{ name:String(name||"").trim(), spot:randomSpot(wid), createdAt:now() } });
+  return id;
+}
+
+/** A spot that drops the new entry into a gap chosen uniformly at random.
+ *  Picking a bare rnd() would instead favour whichever gap happens to be
+ *  widest, so a run of additions would clump together on the wheel. Only the
+ *  new entry gets written — the existing spots never move. */
+function randomSpot(wid){
+  const spots = DB.slicesOf(wid).map(s=>s.data.spot).sort((a,b)=>a-b);
+  if(!spots.length) return rnd();
+  const i  = Math.floor(rnd()*(spots.length+1));
+  const lo = i === 0 ? 0 : spots[i-1];
+  const hi = i === spots.length ? 1 : spots[i];
+  return lo + (hi-lo)*rndBetween(0.3, 0.7);
+}
+/** Mutate a node's data in place and stamp/queue it. */
+function patch(id, fn){
+  const n = DB.get(id); if(!n) return;
+  fn(n.data);
+  DB.put(n);
+}
+function wheelOpts(wid){ return DB.get(wid)?.data.opts || DEFAULT_OPTS; }
+function setOpt(wid, k, v){ patch(wid, d=>{ d.opts = { ...DEFAULT_OPTS, ...d.opts, [k]:v }; }); }
+
+
+/* ------------------------------------------------------------ image intake */
+/** Downscale in-browser so rows stay small even without Storage configured. */
+function processImage(file, maxDim=1400, quality=0.85){
+  return new Promise((resolve,reject)=>{
+    const fr = new FileReader();
+    fr.onerror = ()=>reject(new Error("read failed"));
+    fr.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error("decode failed"));
+      img.onload = ()=>{
+        let { width:w, height:hh } = img;
+        const scale = Math.min(1, maxDim/Math.max(w,hh));
+        w = Math.round(w*scale); hh = Math.round(hh*scale);
+        const cv = document.createElement("canvas");
+        cv.width=w; cv.height=hh;
+        cv.getContext("2d").drawImage(img,0,0,w,hh);
+        cv.toBlob(b=>{
+          if(!b) return reject(new Error("encode failed"));
+          resolve({ blob:b, dataUrl:cv.toDataURL("image/jpeg",quality) });
+        },"image/jpeg",quality);
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+/** Shrink a chosen file and return a usable src: a Storage URL when we're
+ *  synced, otherwise an inline (still downscaled) data URL. */
+async function fileToSrc(file){
+  const { blob, dataUrl } = await processImage(file);
+  let src = null;
+  if(Cloud.client) src = await Cloud.uploadImage(blob,"jpg");
+  return src || dataUrl;
+}
+
+/** Pick a single image and resolve to its src (null if cancelled/failed). */
+function pickOneImage(){
+  return new Promise(resolve=>{
+    const input = $("#filepick");
+    let done = false;
+    const finish = v => { if(!done){ done=true; resolve(v); } };
+    input.value = "";
+    input.onchange = async ()=>{
+      const f = (input.files||[])[0];
+      if(!f) return finish(null);
+      toast("Processing image…");
+      try{ finish(await fileToSrc(f)); }
+      catch(err){ console.warn(err); toast("Could not read that image","err"); finish(null); }
+    };
+    // Dismissing the OS dialog fires no 'change' event, which would leave the
+    // caller waiting forever — recover once the window is focused again.
+    window.addEventListener("focus", ()=>{
+      setTimeout(()=>{ if(!(input.files||[]).length) finish(null); }, 400);
+    }, { once:true });
+    input.click();
+  });
+}
+
+async function setSliceImage(id){
+  const src = await pickOneImage();
+  if(!src) return;
+  patch(id, d=>{ d.image = src; });
+  render();
+  toast("Image added","ok");
+}
+
+/* ============================================================================
+   SOUND — synthesised, so the file stays self-contained.
+   ============================================================================ */
+const Sfx = {
+  ctx:null, _lastTick:0,
+  ensure(){
+    if(!this.ctx){
+      const C = window.AudioContext || window.webkitAudioContext;
+      if(!C) return null;
+      this.ctx = new C();
+    }
+    if(this.ctx.state === "suspended") this.ctx.resume();
+    return this.ctx;
+  },
+  /** A short wooden click as a peg passes the pointer. On a wheel with
+   *  hundreds of wedges the pegs fly past every frame, so hold a floor on the
+   *  spacing — otherwise it reads as a buzz rather than a rattle. */
+  tick(speed=1){
+    if(!prefOn("sound")) return;
+    const nowMs = performance.now();
+    if(nowMs - this._lastTick < 38) return;
+    this._lastTick = nowMs;
+    const c = this.ensure(); if(!c) return;
+    const t = c.currentTime;
+    const o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(1180 + rnd()*260, t);
+    o.frequency.exponentialRampToValueAtTime(420, t+0.045);
+    f.type = "bandpass"; f.frequency.value = 1500; f.Q.value = 1.1;
+    const vol = clamp(0.05 + speed*0.05, 0.03, 0.13);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.055);
+    o.connect(f).connect(g).connect(c.destination);
+    o.start(t); o.stop(t+0.07);
+  },
+  /** A little fanfare when the wheel settles. */
+  win(){
+    if(!prefOn("sound")) return;
+    const c = this.ensure(); if(!c) return;
+    const t0 = c.currentTime;
+    [0,4,7,12,16].forEach((semi,i)=>{
+      const t = t0 + i*0.085;
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = i>2 ? "sine" : "triangle";
+      o.frequency.value = 392 * Math.pow(2, semi/12);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.5);
+      o.connect(g).connect(c.destination);
+      o.start(t); o.stop(t+0.55);
+    });
+  },
+  blip(){
+    if(!prefOn("sound")) return;
+    const c = this.ensure(); if(!c) return;
+    const t = c.currentTime;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(660, t);
+    o.frequency.exponentialRampToValueAtTime(990, t+0.08);
+    g.gain.setValueAtTime(0.09, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.12);
+    o.connect(g).connect(c.destination);
+    o.start(t); o.stop(t+0.14);
+  },
+};
+
+/* ============================================================================
+   CONFETTI
+   ============================================================================ */
+function confetti(colors){
+  if(!prefOn("confetti")) return;
+  const old = $("#confetti"); if(old) old.remove();
+  const cv = document.createElement("canvas");
+  cv.id = "confetti";
+  document.body.appendChild(cv);
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  const W = innerWidth, H = innerHeight;
+  cv.width = W*dpr; cv.height = H*dpr;
+  cv.style.width = W+"px"; cv.style.height = H+"px";
+  const ctx = cv.getContext("2d");
+  ctx.scale(dpr,dpr);
+
+  const pal = colors && colors.length ? colors : PALETTES.carnival.colors;
+  const parts = [];
+  for(let i=0;i<170;i++){
+    parts.push({
+      x: W*0.5 + rndBetween(-W*0.22, W*0.22),
+      y: H*0.44 + rndBetween(-30, 30),
+      vx: rndBetween(-9,9),
+      vy: rndBetween(-17,-5),
+      w: rndBetween(5,11), hh: rndBetween(7,15),
+      rot: rnd()*TAU, vr: rndBetween(-.28,.28),
+      c: pal[Math.floor(rnd()*pal.length)],
+      life: rndBetween(1.6, 2.9),
+      age: 0,
+    });
+  }
+  let last = performance.now();
+  (function frame(t){
+    const dt = Math.min((t-last)/1000, .05); last = t;
+    ctx.clearRect(0,0,W,H);
+    let alive = 0;
+    for(const p of parts){
+      p.age += dt;
+      if(p.age > p.life) continue;
+      alive++;
+      p.vy += 26*dt;         // gravity
+      p.vx *= 1 - 0.6*dt;    // drag
+      p.x += p.vx; p.y += p.vy;
+      p.rot += p.vr;
+      const a = clamp(1 - (p.age/p.life)*(p.age/p.life), 0, 1);
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.w/2, -p.hh/2, p.w, p.hh*Math.abs(Math.cos(p.rot*1.4)));
+      ctx.restore();
+    }
+    if(alive) requestAnimationFrame(frame);
+    else cv.remove();
+  })(last);
+}
+
+/* ============================================================================
+   WHEEL GEOMETRY + PAINTING
+   ============================================================================ */
+/** Choose a colour per slice: an explicit override wins, otherwise cycle the
+ *  palette while making sure the last slice never matches the first. */
+function paletteOf(opts){ return (PALETTES[opts.palette] || PALETTES.carnival).colors; }
+
+function layout(slices, opts){
+  const pal = paletteOf(opts);
+  const n = slices.length;
+  const total = opts.weighted ? slices.reduce((a,s)=>a + (s.data.weight||1), 0) : n;
+  let acc = 0;
+  return slices.map((s,i)=>{
+    const w = opts.weighted ? (s.data.weight||1) : 1;
+    const a0 = (acc/total)*TAU; acc += w;
+    const a1 = (acc/total)*TAU;
+    // wrap-around clash: the final wedge sits next to the first one
+    let ci = i % pal.length;
+    if(i === n-1 && n > 1 && ci === 0) ci = pal.length - 1;
+    return { slice:s, a0, a1, mid:(a0+a1)/2, span:a1-a0, color: s.data.color || pal[ci] };
+  });
+}
+
+const norm = a => ((a % TAU) + TAU) % TAU;
+/** Which segment currently sits under the pointer. */
+function indexAt(segs, rot){
+  const a = norm(POINTER - rot);
+  for(let i=0;i<segs.length;i++) if(a >= segs[i].a0 && a < segs[i].a1) return i;
+  return segs.length ? segs.length-1 : -1;
+}
+
+/**
+ * Paint one wheel. `o` accepts:
+ *   rot      current rotation in radians
+ *   labels   draw entry names
+ *   hover    index to brighten
+ *   winner   index to spotlight
+ *   mini     compact styling for gallery previews
+ */
+function paintWheel(cv, segs, o={}){
+  const size = o.size || cv.clientWidth || 300;
+  const dpr = Math.min(devicePixelRatio||1, 2.5);
+  if(cv.width !== Math.round(size*dpr)){
+    cv.width = Math.round(size*dpr); cv.height = Math.round(size*dpr);
+    cv.style.width = size+"px"; cv.style.height = size+"px";
+  }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,size,size);
+
+  const cx = size/2, cy = size/2;
+  const R = size/2 - 1;
+  const rimW = o.mini ? Math.max(3, size*0.035) : Math.max(7, size*0.032);
+  const R1 = R - rimW;                       // slice radius
+  const hubR = (o.mini ? 0.14 : 0.115) * size;
+  const rot = o.rot || 0;
+
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.rotate(rot);
+
+  if(!segs.length){
+    ctx.restore();
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.beginPath(); ctx.arc(0,0,R1,0,TAU);
+    ctx.fillStyle = "rgba(255,255,255,.03)"; ctx.fill();
+    ctx.setLineDash([7,8]);
+    ctx.strokeStyle = "rgba(255,255,255,.16)"; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.restore();
+    paintRim(ctx, cx, cy, R, rimW, [], rot, o);
+    return;
+  }
+
+  /* wedges */
+  segs.forEach((s,i)=>{
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.arc(0,0,R1,s.a0,s.a1);
+    ctx.closePath();
+    const g = ctx.createRadialGradient(0,0,hubR*0.5,0,0,R1);
+    const base = s.color;
+    g.addColorStop(0, shade(base, .1));
+    g.addColorStop(.72, base);
+    g.addColorStop(1, shade(base, -.16));
+    ctx.fillStyle = g;
+    ctx.fill();
+    if(i === o.hover){ ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.fill(); }
+    if(i === o.winner){
+      const a = o.pulse ? 0.10 + 0.10*Math.abs(Math.sin(performance.now()/260)) : 0.13;
+      ctx.fillStyle = "rgba(255,255,255,"+a+")";
+      ctx.fill();
+    }
+  });
+
+  /* separators */
+  if(segs.length > 1 && segs.length <= 220){
+    ctx.lineWidth = Math.max(.7, size*0.0026);
+    ctx.strokeStyle = "rgba(10,10,18,.32)";
+    segs.forEach(s=>{
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.lineTo(Math.cos(s.a0)*R1, Math.sin(s.a0)*R1);
+      ctx.stroke();
+    });
+  }
+
+  /* labels */
+  if(o.labels){
+    const inner = hubR + size*0.028;
+    const avail = R1 - inner - size*0.022;             // radial room for the text
+    segs.forEach(s=>{
+      const name = s.slice.data.name || "—";
+      // Two things bound the type size: how thick the wedge is (angular room)
+      // and how long the run from rim to hub is (radial room). Take whichever
+      // is tighter — the name is never cut short or dropped, only shrunk.
+      const arcH = s.span * (R1*0.62);                 // wedge height mid-way out
+      let fs = Math.min(size*0.046, arcH*0.62);
+      // Text width scales linearly with font size, so one measurement at a
+      // reference size gives the exact size that fills `avail`.
+      const w = labelWidth(ctx, name);
+      if(w > 0) fs = Math.min(fs, avail * LABEL_REF / w);
+      if(!(fs > 0.05) || avail <= 0) return;           // wheel smaller than its hub
+      ctx.save();
+      ctx.rotate(s.mid);
+      // A wedge pointing left would carry its label upside down, so turn that
+      // half around and run the text the other way. Judged on the *screen*
+      // angle, so it stays right way up wherever the wheel comes to rest.
+      const screenA = norm(s.mid + (o.rot||0));
+      const flip = screenA > Math.PI/2 && screenA < Math.PI*1.5;
+      if(flip) ctx.rotate(Math.PI);
+      const x = (R1 - size*0.026) * (flip ? -1 : 1);
+      ctx.font = `600 ${fs}px ${LABEL_FONT}`;
+      ctx.textAlign = flip ? "left" : "right";
+      ctx.textBaseline = "middle";
+      const ink = inkOn(s.color);
+      // Below a few pixels the offset shadow just smudges the glyphs together.
+      if(fs >= 9){
+        ctx.fillStyle = ink === "rgba(255,255,255,.96)" ? "rgba(0,0,0,.3)" : "rgba(255,255,255,.28)";
+        ctx.fillText(name, x, size*0.0035*(flip?-1:1));
+      }
+      ctx.fillStyle = ink;
+      ctx.fillText(name, x, 0);
+      ctx.restore();
+    });
+  }
+
+  if(o.mini){
+    // No live hub element sits over a preview, so paint a small solid one.
+    ctx.beginPath(); ctx.arc(0,0,hubR,0,TAU);
+    ctx.fillStyle = "#141724"; ctx.fill();
+    ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,.14)"; ctx.stroke();
+  }else{
+    /* inner vignette so the hub sits in a well */
+    const vg = ctx.createRadialGradient(0,0,hubR*0.85,0,0,hubR*2.0);
+    vg.addColorStop(0,"rgba(0,0,0,.42)");
+    vg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.beginPath(); ctx.arc(0,0,hubR*2.0,0,TAU);
+    ctx.fillStyle = vg; ctx.fill();
+  }
+
+  ctx.restore();
+  paintRim(ctx, cx, cy, R, rimW, segs, rot, o);
+}
+
+function paintRim(ctx, cx, cy, R, rimW, segs, rot, o){
+  ctx.save();
+  ctx.translate(cx,cy);
+  const rMid = R - rimW/2;
+  const g = ctx.createLinearGradient(-R,-R,R,R);
+  g.addColorStop(0,"#3a4166");
+  g.addColorStop(.32,"#171b2c");
+  g.addColorStop(.55,"#4a5382");
+  g.addColorStop(.8,"#1b2033");
+  g.addColorStop(1,"#39406a");
+  ctx.beginPath(); ctx.arc(0,0,rMid,0,TAU);
+  ctx.lineWidth = rimW; ctx.strokeStyle = g; ctx.stroke();
+
+  ctx.beginPath(); ctx.arc(0,0,R-0.6,0,TAU);
+  ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,.16)"; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,0,R-rimW+0.6,0,TAU);
+  ctx.strokeStyle = "rgba(0,0,0,.45)"; ctx.stroke();
+
+  /* pegs at the wedge boundaries — these are what the pointer ticks against */
+  if(segs.length > 1 && segs.length <= 46 && !o.mini){
+    const pr = Math.max(1.6, rimW*0.19);
+    segs.forEach(s=>{
+      const a = s.a0 + rot;
+      const x = Math.cos(a)*rMid, y = Math.sin(a)*rMid;
+      ctx.beginPath(); ctx.arc(x,y,pr,0,TAU);
+      ctx.fillStyle = "#e8ecf6"; ctx.fill();
+      ctx.beginPath(); ctx.arc(x - pr*0.28, y - pr*0.3, pr*0.42, 0, TAU);
+      ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.fill();
+    });
+  }
+  ctx.restore();
+}
+
+/* ============================================================================
+   SPIN ENGINE
+   ============================================================================ */
+const WINNER_PULSE_MS = 6000;   // how long the winning wedge breathes for
+const winnerPulsing = () => UI.winner >= 0 && Date.now() - UI.winnerAt < WINNER_PULSE_MS;
+
+const Spin = {
+  raf:0, running:false, lastIdx:-1,
+
+  start(wid, cv){
+    if(this.running) return;
+    const wheel = DB.get(wid); if(!wheel) return;
+    const opts = wheel.data.opts;
+    const live = DB.liveOf(wid);
+    if(!live.length){ toast("Add something to the wheel first"); return; }
+
+    Sfx.ensure();
+    const segs = layout(live, opts);
+    const rot0 = norm(UI.rot);
+
+    // Pick the landing point by sampling the wheel itself, so a weighted wheel
+    // is fair by construction rather than by a parallel probability table.
+    const pick = rnd()*TAU;
+    let idx = segs.findIndex(s=>pick >= s.a0 && pick < s.a1);
+    if(idx < 0) idx = segs.length-1;
+    const s = segs[idx];
+    const pad = Math.min(s.span*0.14, 0.03);
+    const target = clamp(pick, s.a0+pad, s.a1-pad);
+
+    const turns = 4 + Math.floor(rnd()*4);
+    const dur = clamp(+opts.duration || 5.5, 2, 14) * 1000;
+    const delta = norm(POINTER - target - rot0) + TAU*turns;
+
+    this.running = true;
+    this.lastIdx = indexAt(segs, rot0);
+    UI.winner = -1;
+    renderStageChrome();
+
+    const t0 = performance.now();
+    const step = t => {
+      const x = clamp((t-t0)/dur, 0, 1);
+      const e = 1 - Math.pow(1-x, 4.2);              // long, smooth deceleration
+      UI.rot = rot0 + delta*e;
+      const i = indexAt(segs, UI.rot);
+      if(i !== this.lastIdx){
+        this.lastIdx = i;
+        Sfx.tick(1-x);
+        tickPointer();
+      }
+      paintWheel(cv, segs, { rot:UI.rot, labels:showLabels(opts) });
+      if(x < 1){ this.raf = requestAnimationFrame(step); }
+      else{
+        UI.rot = norm(rot0 + delta);
+        this.running = false;
+        this.finish(wid, segs, idx);
+      }
+    };
+    this.raf = requestAnimationFrame(step);
+  },
+
+  finish(wid, segs, idx){
+    const seg = segs[idx];
+    const node = seg.slice;
+    UI.winner = idx;
+    UI.winnerAt = Date.now();
+    patch(node.id, d=>{ d.hits = (d.hits||0) + 1; });
+    if(DB.get(wid).data.opts.eliminate){
+      patch(node.id, d=>{ d.enabled = false; });
+      UI.winner = -1;               // the wedge is about to stop existing
+    }
+    patch(wid, d=>{
+      d.spins = (d.spins||0) + 1;
+      d.history = [{ id:node.id, name:node.data.name, image:node.data.image||"", color:seg.color, at:now() },
+                   ...(d.history||[])].slice(0, MAX_HISTORY);
+    });
+    Sfx.win();
+    confetti(segs.map(s=>s.color));
+    renderStageChrome();
+    renderPanel();
+    showResult(wid, node.id, seg.color);
+  },
+
+  stop(){ if(this.raf) cancelAnimationFrame(this.raf); this.raf=0; this.running=false; },
+};
+
+/** Names are always drawn when the option is on — they shrink to fit rather
+ *  than dropping out, however many entries the wheel carries. */
+const showLabels = opts => opts.labels !== false;
+function tickPointer(){
+  const p = $(".pointer"); if(!p) return;
+  p.classList.add("tick");
+  setTimeout(()=>p.classList.remove("tick"), 85);
+}
+
+/* ============================================================================
+   ROUTER   #/   #/w/:wid
+   ============================================================================ */
+const Route = { name:"home", wid:null };
+function parseHash(){
+  const raw = decodeURIComponent(location.hash.replace(/^#\/?/,""));
+  const p = raw.split("/").filter(Boolean);
+  if(p[0]==="w" && p[1]) return { name:"wheel", wid:p[1] };
+  return { name:"home", wid:null };
+}
+function go(hash){ location.hash = hash; }
+window.addEventListener("hashchange", ()=>{
+  Spin.stop();
+  Object.assign(Route, parseHash());
+  UI.rot = 0; UI.winner = -1; UI.hover = -1; UI.filter = "";
+  render();
+});
+
+/* ============================================================================
+   RENDER
+   ============================================================================ */
+const UI = {
+  rot:0, winner:-1, hover:-1,
+  tab:"entries", filter:"",
+  panelHidden:false,      // desktop: panel collapsed
+  panelOpen:false,        // mobile: drawer showing
+  present:false,
+  wheelSize:0,
+  overlay:null,
+  winnerAt:0,
+};
+
+let renderPending = false;
+function scheduleRender(){
+  if(renderPending) return; renderPending = true;
+  requestAnimationFrame(()=>{ renderPending = false; if(!Spin.running) render(); });
+}
+
+function render(){
+  const app = $("#app");
+  app.innerHTML = topbar() + (Route.name==="wheel" ? viewWheel() : viewHome());
+  bindTopbar();
+  if(Route.name==="wheel") bindWheel(); else bindHome();
+}
+
+/* ------------------------------------------------------------------ topbar */
+function topbar(){
+  const w = Route.name==="wheel" ? DB.get(Route.wid) : null;
+  const n = w ? DB.liveOf(w.id).length : 0;
+  return `<div class="topbar">
+    ${w ? `<button class="btn icon ghost" id="back" title="All wheels (Esc)">${svg("left")}</button>`
+        : `<div class="tb-brand" id="brand">${svg("wheel","mark")}<span>The Wheel of Everything</span></div>`}
+    ${w ? `<div class="tb-title" id="wname" title="Rename">${h(w.data.name)}<span class="n">${plural(n,"entry","entries")}</span></div>` : ""}
+    <div class="tb-spacer"></div>
+    ${w ? `<button class="btn icon ghost panel-toggle" id="ptoggle" title="Entries">${svg("list")}</button>
+           <button class="btn icon ghost" id="present" title="Presentation mode (F)">${svg("expand")}</button>` : ""}
+    <button class="sync ${syncClass()}" id="syncbtn" title="${h(syncTitle())}">
+      <span class="dot"></span><span>${h(syncLabel())}</span>
+    </button>
+  </div>`;
+}
+function syncClass(){
+  return Cloud.status==="on" ? "on" : Cloud.status==="err" ? "err"
+       : (Cloud.status==="saving"||Cloud.status==="connecting") ? "sav" : "off";
+}
+function syncLabel(){
+  return { on:"Synced", saving:"Saving…", connecting:"Connecting…", err:"Sync error", off:"This device" }[Cloud.status] || "This device";
+}
+function syncTitle(){
+  if(Cloud.status==="off") return "Saved on this device only — click to set up sharing";
+  if(Cloud.status==="err") return "Sync problem: "+(Cloud.statusMsg||"unknown");
+  return "Syncing through Supabase — click for settings";
+}
+function refreshSyncChip(){
+  const b = $("#syncbtn"); if(!b) return;
+  b.className = "sync "+syncClass();
+  b.title = syncTitle();
+  b.lastElementChild.textContent = syncLabel();
+}
+function bindTopbar(){
+  $("#brand")?.addEventListener("click", ()=>go("#/"));
+  $("#back")?.addEventListener("click", ()=>go("#/"));
+  $("#syncbtn")?.addEventListener("click", openSyncModal);
+  $("#wname")?.addEventListener("click", ()=>promptWheel(Route.wid));
+  $("#present")?.addEventListener("click", togglePresent);
+  $("#ptoggle")?.addEventListener("click", ()=>{
+    UI.panelOpen = !UI.panelOpen;
+    $(".panel")?.classList.toggle("open", UI.panelOpen);
+  });
+}
+
+/* ============================================================================
+   HOME
+   ============================================================================ */
+function viewHome(){
+  const list = DB.wheelList();
+  return `<div class="view"><div class="scroll"><div class="wrap fade">
+    <div class="hero">
+      ${svg("wheel","crest")}
+      <h1>The Wheel of <em>Everything</em></h1>
+      <p class="tag">Build a wheel out of anything — people, dinners, chores, monsters, ideas.
+         Add to it forever, give every entry a picture, then let the spin decide.</p>
+      <div class="foot">
+        <button class="btn primary" id="newwheel">${svg("plus")} New wheel</button>
+        <button class="btn" id="import">${svg("upload")} Import backup</button>
+        ${list.length?`<button class="btn" id="export">${svg("download")} Export all</button>`:""}
+        <button class="btn ghost" id="help">${svg("info")} How it works</button>
+      </div>
+    </div>
+    <div class="ghead">
+      <h2>Your wheels</h2>
+      <div class="sp"></div>
+      <span style="font-size:12.5px;color:var(--text-3)">${plural(list.length,"wheel")}</span>
+    </div>
+    ${list.length ? `<div class="grid">
+        ${list.map(wheelCard).join("")}
+        <button class="newcard" id="newcard">${svg("plus")}<span>New wheel</span></button>
+      </div>`
+      : `<div class="empty">${svg("wheel")}
+          <h3>Nothing to spin yet</h3>
+          <p>Make your first wheel — a list of names, restaurants, chores, anything.
+             You can add entries forever and every one of them can carry a picture.</p>
+          <button class="btn primary" id="empty-new">${svg("plus")} Create a wheel</button>
+        </div>`}
+  </div></div></div>`;
+}
+
+function wheelCard(w){
+  const live = DB.liveOf(w.id).length;
+  const total = DB.slicesOf(w.id).length;
+  const last = (w.data.history||[])[0];
+  return `<div class="wcard" data-open="${w.id}">
+    <div class="rowact">
+      <button class="btn icon sm" data-ren="${w.id}" title="Rename">${svg("pencil")}</button>
+      <button class="btn icon sm" data-dup="${w.id}" title="Duplicate">${svg("copy")}</button>
+      <button class="btn icon sm" data-del="${w.id}" title="Delete">${svg("trash")}</button>
+    </div>
+    <div class="prev"><canvas data-prev="${w.id}" width="268" height="268"></canvas></div>
+    <div class="body">
+      <h4>${h(w.data.name)}</h4>
+      <p>${h(w.data.desc || (last ? "Last landed on "+last.name : "No spins yet — give it a whirl."))}</p>
+      <div class="meta">
+        <span>${svg("list")}<b>${live}</b>${total>live?` of ${total}`:""}</span>
+        <span>${svg("dice")}<b>${w.data.spins||0}</b> spins</span>
+        <span>${svg("sparkle")}${h(PALETTES[w.data.opts.palette]?.label || "Carnival")}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindHome(){
+  $$("[data-prev]").forEach(cv=>{
+    const w = DB.get(cv.dataset.prev); if(!w) return;
+    const segs = layout(DB.liveOf(w.id).slice(0,60), w.data.opts);
+    paintWheel(cv, segs, { rot:-0.35, labels:false, mini:true, size:134 });
+  });
+  $$(".wcard").forEach(c=>{
+    c.addEventListener("click", ev=>{
+      if(ev.target.closest("[data-ren],[data-dup],[data-del]")) return;
+      go("#/w/"+c.dataset.open);
+    });
+  });
+  $$("[data-ren]").forEach(b=>b.addEventListener("click",()=>promptWheel(b.dataset.ren)));
+  $$("[data-dup]").forEach(b=>b.addEventListener("click",()=>duplicateWheel(b.dataset.dup)));
+  $$("[data-del]").forEach(b=>b.addEventListener("click",()=>confirmDeleteWheel(b.dataset.del)));
+  $("#newwheel")?.addEventListener("click",()=>promptWheel(null));
+  $("#newcard")?.addEventListener("click",()=>promptWheel(null));
+  $("#empty-new")?.addEventListener("click",()=>promptWheel(null));
+  $("#import")?.addEventListener("click", importBackup);
+  $("#export")?.addEventListener("click", exportBackup);
+  $("#help")?.addEventListener("click", openHelp);
+}
+
+/* ============================================================================
+   WHEEL VIEW
+   ============================================================================ */
+function viewWheel(){
+  const w = DB.get(Route.wid);
+  if(!w || w.deleted){
+    return `<div class="view"><div class="scroll"><div class="wrap fade"><div class="empty">
+      ${svg("wheel")}<h3>That wheel is gone</h3><p>It may have been deleted on another device.</p>
+      <button class="btn primary" onclick="location.hash='#/'">Back to all wheels</button>
+    </div></div></div></div>`;
+  }
+  return `<div class="view"><div class="wv fade">
+    <div class="stage" id="stage">
+      <div class="stage-top">
+        <button class="btn icon sm ghost ${prefOn("sound")?"on":""}" id="sound" title="Sound">${svg(prefOn("sound")?"sound":"mute")}</button>
+        <button class="btn icon sm ghost" id="shuffle" title="Reshuffle the wheel">${svg("shuffle")}</button>
+        <div class="sp"></div>
+        <button class="btn sm ghost" id="hidepanel" title="${UI.panelHidden?"Show the entries panel":"Collapse the entries panel"}">${svg(UI.panelHidden?"list":"right")}</button>
+      </div>
+      <div class="wheelbox" id="wheelbox">
+        <div class="pointer">${pointerSvg()}</div>
+        <canvas id="wheel"></canvas>
+        <button class="hub" id="hub">SPIN<span class="sub">TAP</span></button>
+      </div>
+      <button class="btn icon" id="exitpresent" title="Leave presentation mode (Esc)">${svg("x")}</button>
+      <div class="stage-foot">
+        <button class="spinbtn" id="spinbtn">Spin the wheel</button>
+        <div id="lastres">${lastResChip(w)}</div>
+      </div>
+    </div>
+    <div class="panel ${UI.panelHidden?"closed":""} ${UI.panelOpen?"open":""}" id="panel">${panelHtml(w)}</div>
+  </div></div>`;
+}
+
+/** A quiet reminder of what came up last, sat beside the spin button. */
+function lastResChip(w){
+  const r = (w.data.history||[])[0];
+  if(!r) return "";
+  return `<button class="btn sm ghost" id="lastbtn" title="Show it again">
+    <span class="dot" style="background:${h(r.color||"var(--brand)")}"></span>
+    Last: <b style="color:var(--text);font-weight:600">${h(r.name)}</b>
+  </button>`;
+}
+
+function pointerSvg(){
+  return `<svg viewBox="0 0 42 52" fill="none" aria-hidden="true">
+    <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#dfe4f3"/><stop offset="1" stop-color="#9aa4c4"/>
+    </linearGradient></defs>
+    <path d="M21 51 6.5 20.5A15.6 15.6 0 1 1 35.5 20.5L21 51Z" fill="url(#pg)" stroke="rgba(0,0,0,.35)" stroke-width="1.2" stroke-linejoin="round"/>
+    <circle cx="21" cy="16.5" r="5.6" fill="#141724" opacity=".85"/>
+    <circle cx="21" cy="16.5" r="2.4" fill="#ff6ea9"/>
+  </svg>`;
+}
+
+function bindWheel(){
+  const w = DB.get(Route.wid); if(!w) return;
+  const cv = $("#wheel");
+  sizeWheel();
+  refreshWheel();
+
+  const doSpin = ()=>{ if(!Spin.running) Spin.start(w.id, cv); };
+  $("#spinbtn")?.addEventListener("click", doSpin);
+  $("#hub")?.addEventListener("click", doSpin);
+  cv?.addEventListener("click", doSpin);
+
+  $("#sound")?.addEventListener("click", ()=>{
+    const on = !prefOn("sound"); Prefs.set("sound", on);
+    if(on){ Sfx.ensure(); Sfx.blip(); }
+    render();
+  });
+  $("#shuffle")?.addEventListener("click", ()=>reshuffleWheel(w.id));
+  $("#exitpresent")?.addEventListener("click", togglePresent);
+  $("#hidepanel")?.addEventListener("click", ()=>{
+    UI.panelHidden = !UI.panelHidden;
+    render();
+  });
+
+  /* hover tooltip over the wedges */
+  cv?.addEventListener("mousemove", ev=>{
+    if(Spin.running) return;
+    const segs = currentSegs();
+    if(!segs.length) return;
+    const r = cv.getBoundingClientRect();
+    const dx = ev.clientX - (r.left + r.width/2), dy = ev.clientY - (r.top + r.height/2);
+    const dist = Math.hypot(dx,dy);
+    const i = dist > r.width/2 || dist < r.width*0.12 ? -1
+            : (()=>{ const a = norm(Math.atan2(dy,dx) - UI.rot);
+                     return segs.findIndex(s=>a>=s.a0 && a<s.a1); })();
+    if(i !== UI.hover){ UI.hover = i; refreshWheel(); }
+    showTip(i>=0 ? segs[i] : null, ev.clientX, ev.clientY);
+  });
+  cv?.addEventListener("mouseleave", ()=>{ UI.hover=-1; refreshWheel(); showTip(null); });
+
+  bindPanel();
+  if(!window.__wheelResize){
+    window.__wheelResize = true;
+    window.addEventListener("resize", debounce(()=>{ if(Route.name==="wheel"){ sizeWheel(); refreshWheel(); } }, 90));
+  }
+}
+
+function currentSegs(){
+  const w = DB.get(Route.wid); if(!w) return [];
+  return layout(DB.liveOf(w.id), w.data.opts);
+}
+function sizeWheel(){
+  const stage = $("#stage"), box = $("#wheelbox"); if(!stage || !box) return;
+  const foot = $(".stage-foot");
+  const availH = stage.clientHeight - (foot?foot.offsetHeight:0) - 74;
+  const availW = stage.clientWidth - 30;
+  UI.wheelSize = clamp(Math.floor(Math.min(availW, availH)), 190, 760);
+  box.style.width = UI.wheelSize+"px";
+  box.style.height = UI.wheelSize+"px";
+}
+function refreshWheel(){
+  const cv = $("#wheel"); if(!cv) return;
+  const w = DB.get(Route.wid); if(!w) return;
+  const segs = currentSegs();
+  paintWheel(cv, segs, {
+    rot:UI.rot, size:UI.wheelSize, hover:UI.hover, winner:UI.winner,
+    pulse: winnerPulsing(),
+    labels: showLabels(w.data.opts),
+  });
+  renderStageChrome();
+}
+function renderStageChrome(){
+  const w = DB.get(Route.wid); if(!w) return;
+  const n = DB.liveOf(w.id).length;
+  const btn = $("#spinbtn"), hub = $("#hub");
+  const busy = Spin.running, empty = n === 0;
+  if(btn){ btn.disabled = busy || empty; btn.textContent = busy ? "Spinning…" : empty ? "Nothing on the wheel" : "Spin the wheel"; }
+  if(hub){ hub.disabled = busy || empty; }
+  const t = $("#wname"); if(t) t.innerHTML = h(w.data.name)+`<span class="n">${plural(n,"entry","entries")}</span>`;
+  const lr = $("#lastres");
+  if(lr){
+    const html = busy ? "" : lastResChip(w);
+    if(lr.innerHTML !== html){
+      lr.innerHTML = html;
+      $("#lastbtn")?.addEventListener("click", ()=>{
+        const r = (w.data.history||[])[0];
+        if(r && DB.get(r.id)) showResult(w.id, r.id, r.color);
+      });
+    }
+  }
+  $("#wheelbox")?.classList.toggle("spinning", busy);
+}
+function showTip(seg, x, y){
+  let tip = $("#wtip");
+  if(!seg){ tip?.remove(); return; }
+  if(!tip){ tip = document.createElement("div"); tip.id="wtip"; tip.className="wtip"; $("#stage").appendChild(tip); }
+  const opts = wheelOpts(Route.wid);
+  const stage = $("#stage").getBoundingClientRect();
+  tip.innerHTML = `<b>${h(seg.slice.data.name||"—")}</b>${opts.weighted?`<span class="w">×${seg.slice.data.weight}</span>`:""}`;
+  tip.style.left = (x - stage.left)+"px";
+  tip.style.top  = (y - stage.top)+"px";
+}
+function togglePresent(){
+  UI.present = !UI.present;
+  document.body.classList.toggle("present", UI.present);
+  setTimeout(()=>{ sizeWheel(); refreshWheel(); }, 60);
+  if(UI.present) toast("Presentation mode — press F or Esc to exit");
+}
+
+/* ============================================================================
+   PANEL
+   ============================================================================ */
+function panelHtml(w){
+  const all = DB.slicesOf(w.id);
+  const live = all.filter(s=>s.data.enabled!==false);
+  const tabs = [
+    ["entries","list","Entries", live.length],
+    ["history","clock","History", (w.data.history||[]).length],
+    ["setup","sliders","Setup", null],
+  ];
+  return `<div class="ptabs">
+      ${tabs.map(([k,ic,label,ct])=>`<button class="ptab ${UI.tab===k?"on":""}" data-tab="${k}">
+        ${svg(ic)}<span>${label}</span>${ct!==null&&ct?`<span class="ct">${ct}</span>`:""}</button>`).join("")}
+    </div>
+    <div class="pbody" id="pbody">${
+      UI.tab==="entries" ? tabEntries(w, all) : UI.tab==="history" ? tabHistory(w) : tabSetup(w)
+    }</div>
+    <div class="pfoot ${UI.tab==="entries"?"":"only-close"}">
+      ${UI.tab==="entries" ? `
+        <button class="btn sm" id="bulk">${svg("upload")} Paste a list</button>
+        <button class="btn sm" id="shuffle2">${svg("shuffle")} Reshuffle wheel</button>` : ""}
+      <div style="flex:1"></div>
+      <button class="btn sm primary" id="closepanel">${svg("check")} Done</button>
+    </div>`;
+}
+
+function tabEntries(w, all){
+  const segs = layout(DB.liveOf(w.id), w.data.opts);
+  const colorOf = id => segs.find(s=>s.slice.id===id)?.color || "#3a4268";
+  const f = UI.filter.trim().toLowerCase();
+  const match = s => !f || (s.data.name||"").toLowerCase().includes(f);
+  const live = all.filter(s=>s.data.enabled!==false && match(s));
+  const off  = all.filter(s=>s.data.enabled===false && match(s));
+  const opts = w.data.opts;
+
+  return `<div class="quickadd">
+      <input class="inp" id="qadd" placeholder="Add an entry…" autocomplete="off" spellcheck="false">
+      <button class="btn primary icon" id="qaddbtn" title="Add">${svg("plus")}</button>
+    </div>
+    ${all.length > 7 ? `<div class="qfilter">${svg("search")}
+      <input id="qfilter" placeholder="Filter ${all.length} entries…" value="${h(UI.filter)}" autocomplete="off">
+    </div>` : ""}
+    ${live.length ? `<div class="sechead">On the wheel <span class="ct">${live.length}</span>
+        <div class="sp"></div>
+        <span style="text-transform:none;letter-spacing:0;font-weight:400" title="The wheel itself is in a random order">listed A–Z</span>
+      </div>
+      <div class="elist" id="elist">${live.map(s=>entryRow(s, colorOf(s.id), opts)).join("")}</div>`
+      : `<div class="empty" style="padding:34px 12px">${svg("list")}
+          <h3>${all.length?"No matches":"The wheel is empty"}</h3>
+          <p>${all.length?"Nothing matches that filter.":"Type a name above and press Enter. Keep going — there's no limit. Entries land in a random spot on the wheel; this list stays in alphabetical order."}</p>
+        </div>`}
+    ${off.length ? `<div class="sechead">${svg("eyeoff")} Off the wheel <span class="ct">${off.length}</span>
+        <div class="sp"></div>
+        <button class="btn sm ghost" id="restoreall">${svg("undo")} Restore all</button>
+      </div>
+      <div class="elist">${off.map(s=>entryRow(s, "#3a4268", opts)).join("")}</div>` : ""}
+    ${all.length ? `<div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm danger" id="clearall">${svg("trash")} Remove all entries</button>
+      </div>` : ""}`;
+}
+
+function entryRow(s, color, opts){
+  const d = s.data;
+  const off = d.enabled === false;
+  const ini = (d.name||"?").trim().charAt(0).toUpperCase() || "?";
+  return `<div class="eitem ${off?"off":""}" data-id="${s.id}">
+    <button class="sw" data-img="${s.id}" style="background:${color}" title="Set a picture">
+      ${d.image ? `<img src="${h(d.image)}" alt="">` : `<span class="ini">${h(ini)}</span>`}
+      <span class="cam">${svg("camera")}</span>
+    </button>
+    <div class="tx" data-edit="${s.id}" style="cursor:pointer">
+      <div class="nm">${h(d.name || "Untitled")}</div>
+      <div class="ds">
+        ${opts.weighted && d.weight !== 1 ? `<span>${svg("scale")}×${d.weight}</span>` : ""}
+        ${d.hits ? `<span>${svg("dice")}${d.hits}</span>` : ""}
+        ${d.note ? `<span>${svg("info")}note</span>` : ""}
+      </div>
+    </div>
+    <div class="acts">
+      <button class="btn icon" data-toggle="${s.id}" title="${off?"Put back on the wheel":"Take off the wheel"}">${svg(off?"eye":"eyeoff")}</button>
+      <button class="btn icon" data-edit2="${s.id}" title="Edit">${svg("pencil")}</button>
+      <button class="btn icon" data-del="${s.id}" title="Delete">${svg("trash")}</button>
+    </div>
+  </div>`;
+}
+
+function tabHistory(w){
+  const hist = w.data.history || [];
+  const all = DB.slicesOf(w.id);
+  const top = all.filter(s=>s.data.hits).sort((a,b)=>b.data.hits-a.data.hits).slice(0,12);
+  const max = top.length ? top[0].data.hits : 1;
+  const segs = layout(DB.liveOf(w.id), w.data.opts);
+  const colorOf = id => segs.find(s=>s.slice.id===id)?.color || "var(--brand)";
+  if(!hist.length && !top.length){
+    return `<div class="empty" style="padding:40px 12px">${svg("clock")}
+      <h3>No spins yet</h3><p>Every result lands here, newest first, with a tally of how often each entry has come up.</p></div>`;
+  }
+  return `${top.length ? `<div class="sechead">${svg("chart")} Most landed on</div>
+      ${top.map(s=>`<div class="stat">
+        <span class="nm" title="${h(s.data.name)}">${h(s.data.name)}</span>
+        <span class="bar"><i style="width:${Math.round(s.data.hits/max*100)}%;background:${colorOf(s.id)}"></i></span>
+        <span class="n">${s.data.hits}</span>
+      </div>`).join("")}` : ""}
+    <div class="sechead">${svg("clock")} Recent results
+      <div class="sp"></div>
+      ${hist.length?`<button class="btn sm ghost" id="clearhist">Clear</button>`:""}
+    </div>
+    ${hist.length ? hist.slice(0,60).map(r=>`<div class="hitem">
+        <span class="sw" style="background:${h(r.color||"#3a4268")}">
+          ${r.image?`<img src="${h(r.image)}" alt="">`:`<span class="ini">${h((r.name||"?").charAt(0).toUpperCase())}</span>`}
+        </span>
+        <span class="tx"><div class="nm">${h(r.name||"—")}</div></span>
+        <span class="ago">${h(fmtAgo(r.at))}</span>
+      </div>`).join("")
+      : `<div style="font-size:13px;color:var(--text-3);padding:6px 2px">Nothing recorded yet.</div>`}
+    <div style="margin-top:18px">
+      <button class="btn sm" id="resetcounts">${svg("undo")} Reset the tally</button>
+    </div>`;
+}
+
+function tabSetup(w){
+  const o = w.data.opts;
+  return `<div class="field">
+      <label>Wheel name</label>
+      <input class="inp" id="sname" value="${h(w.data.name)}">
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <textarea class="inp" id="sdesc" placeholder="What is this wheel for?" style="min-height:62px">${h(w.data.desc)}</textarea>
+    </div>
+    <div class="field">
+      <label>Colour palette</label>
+      <div class="palgrid">
+        ${PAL_KEYS.map(k=>`<button class="palcard ${o.palette===k?"on":""}" data-pal="${k}">
+          <span class="sws">${PALETTES[k].colors.slice(0,6).map(c=>`<i style="background:${c}"></i>`).join("")}</span>
+          <span>${PALETTES[k].label}</span>
+        </button>`).join("")}
+      </div>
+    </div>
+    <div class="field">
+      <label>Behaviour</label>
+      <div class="setrow">
+        <div class="tx"><b>Weighted slices</b><small>Give entries a bigger or smaller share of the wheel.</small></div>
+        <button class="sw-toggle ${o.weighted?"on":""}" data-opt="weighted"></button>
+      </div>
+      <div class="setrow">
+        <div class="tx"><b>Retire the winner</b><small>Whatever it lands on comes off the wheel — good for draws and running orders.</small></div>
+        <button class="sw-toggle ${o.eliminate?"on":""}" data-opt="eliminate"></button>
+      </div>
+      <div class="setrow">
+        <div class="tx"><b>Names on the wheel</b><small>Printed on every wedge, shrinking as far as it takes to fit.</small></div>
+        <button class="sw-toggle ${o.labels!==false?"on":""}" data-opt="labels"></button>
+      </div>
+      <div class="setrow">
+        <div class="tx"><b>Sound</b><small>Ticks while it spins, a flourish when it stops.</small></div>
+        <button class="sw-toggle ${prefOn("sound")?"on":""}" data-pref="sound"></button>
+      </div>
+      <div class="setrow">
+        <div class="tx"><b>Confetti</b><small>Celebrate the result.</small></div>
+        <button class="sw-toggle ${prefOn("confetti")?"on":""}" data-pref="confetti"></button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Spin length — <span id="durlab">${(+o.duration).toFixed(1)}s</span></label>
+      <input type="range" class="slider" id="dur" min="2" max="12" step="0.5" value="${+o.duration}">
+    </div>
+    <div class="field">
+      <label>This wheel</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" id="dupw">${svg("copy")} Duplicate</button>
+        <button class="btn sm" id="expw">${svg("download")} Export</button>
+        <button class="btn sm danger" id="delw">${svg("trash")} Delete wheel</button>
+      </div>
+    </div>`;
+}
+
+function renderPanel(){
+  const p = $("#panel"); const w = DB.get(Route.wid);
+  if(!p || !w) return;
+  p.innerHTML = panelHtml(w);
+  bindPanel();
+}
+
+function bindPanel(){
+  const w = DB.get(Route.wid); if(!w) return;
+  const wid = w.id;
+
+  $$("[data-tab]").forEach(b=>b.addEventListener("click", ()=>{ UI.tab = b.dataset.tab; renderPanel(); }));
+
+  /* ---- entries */
+  const qadd = $("#qadd");
+  const add = ()=>{
+    const v = qadd.value.trim();
+    if(!v) return;
+    // one line = one entry, so pasting a block just works
+    const names = v.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    names.forEach(n=>createSlice(wid, n));
+    qadd.value = "";
+    UI.filter = "";
+    renderPanel();
+    refreshWheel();
+    $("#qadd")?.focus();
+    if(names.length>1) toast(`Added ${names.length} entries`,"ok");
+  };
+  qadd?.addEventListener("keydown", ev=>{ if(ev.key==="Enter"){ ev.preventDefault(); add(); } });
+  $("#qaddbtn")?.addEventListener("click", add);
+
+  $("#qfilter")?.addEventListener("input", debounce(ev=>{
+    UI.filter = ev.target.value;
+    const body = $("#pbody"); const sc = body?body.scrollTop:0;
+    renderPanel();
+    const nb = $("#pbody"); if(nb) nb.scrollTop = sc;
+    const f = $("#qfilter"); if(f){ f.focus(); f.setSelectionRange(f.value.length,f.value.length); }
+  }, 140));
+
+  $$("[data-img]").forEach(b=>b.addEventListener("click", ()=>setSliceImage(b.dataset.img)));
+  $$("[data-edit]").forEach(b=>b.addEventListener("click", ()=>promptEntry(b.dataset.edit)));
+  $$("[data-edit2]").forEach(b=>b.addEventListener("click", ()=>promptEntry(b.dataset.edit2)));
+  $$("[data-toggle]").forEach(b=>b.addEventListener("click", ()=>{
+    patch(b.dataset.toggle, d=>{ d.enabled = d.enabled===false; });
+    renderPanel(); refreshWheel();
+  }));
+  $$("[data-del]").forEach(b=>b.addEventListener("click", ()=>{
+    const n = DB.get(b.dataset.del); if(!n) return;
+    DB.remove(n.id); renderPanel(); refreshWheel(); toast("Entry deleted");
+  }));
+  $("#restoreall")?.addEventListener("click", ()=>{
+    DB.slicesOf(wid).filter(s=>s.data.enabled===false).forEach(s=>patch(s.id, d=>{ d.enabled = true; }));
+    renderPanel(); refreshWheel(); toast("Everything is back on the wheel","ok");
+  });
+  $("#clearall")?.addEventListener("click", ()=>{
+    const n = DB.slicesOf(wid).length;
+    confirmModal({
+      title:"Remove every entry?", icon:"trash", danger:true, okLabel:"Remove all",
+      body:`<p style="font-size:13.5px;color:var(--text-2);line-height:1.6">This clears all ${n} entries from <b>${h(w.data.name)}</b>. The wheel itself stays, and its history is kept.</p>`,
+      onOk(){ DB.slicesOf(wid).forEach(s=>DB.remove(s.id)); renderPanel(); refreshWheel(); toast("Entries removed"); }
+    });
+  });
+  $("#closepanel")?.addEventListener("click", ()=>{
+    UI.panelOpen = false; $(".panel")?.classList.remove("open");
+  });
+  $("#bulk")?.addEventListener("click", ()=>openBulk(wid));
+  $("#shuffle2")?.addEventListener("click", ()=>reshuffleWheel(wid));
+
+  /* ---- history */
+  $("#clearhist")?.addEventListener("click", ()=>{
+    patch(wid, d=>{ d.history = []; }); renderPanel(); toast("History cleared");
+  });
+  $("#resetcounts")?.addEventListener("click", ()=>{
+    DB.slicesOf(wid).forEach(s=>patch(s.id, d=>{ d.hits = 0; }));
+    patch(wid, d=>{ d.spins = 0; });
+    renderPanel(); toast("Tally reset");
+  });
+
+  /* ---- setup */
+  const sname = $("#sname");
+  sname?.addEventListener("input", debounce(()=>{
+    patch(wid, d=>{ d.name = sname.value.trim() || "Untitled wheel"; });
+    renderStageChrome();
+  }, 300));
+  const sdesc = $("#sdesc");
+  sdesc?.addEventListener("input", debounce(()=>{ patch(wid, d=>{ d.desc = sdesc.value; }); }, 400));
+  $$("[data-pal]").forEach(b=>b.addEventListener("click", ()=>{
+    setOpt(wid,"palette",b.dataset.pal); renderPanel(); refreshWheel();
+  }));
+  $$("[data-opt]").forEach(b=>b.addEventListener("click", ()=>{
+    const k = b.dataset.opt;
+    setOpt(wid, k, !wheelOpts(wid)[k]);
+    renderPanel(); refreshWheel();
+  }));
+  $$("[data-pref]").forEach(b=>b.addEventListener("click", ()=>{
+    const k = b.dataset.pref;
+    Prefs.set(k, !prefOn(k));
+    if(k==="sound" && prefOn("sound")){ Sfx.ensure(); Sfx.blip(); }
+    render();
+  }));
+  const dur = $("#dur");
+  dur?.addEventListener("input", ()=>{ $("#durlab").textContent = (+dur.value).toFixed(1)+"s"; });
+  dur?.addEventListener("change", ()=>setOpt(wid,"duration",+dur.value));
+  $("#dupw")?.addEventListener("click", ()=>duplicateWheel(wid));
+  $("#expw")?.addEventListener("click", ()=>exportWheel(wid));
+  $("#delw")?.addEventListener("click", ()=>confirmDeleteWheel(wid));
+}
+
+/** Deal every entry a new spot, rearranging the wedges. The sidebar list is
+ *  alphabetical and so doesn't move. */
+function reshuffleWheel(wid){
+  DB.slicesOf(wid).forEach(sl=>patch(sl.id, d=>{ d.spot = rnd(); }));
+  UI.winner = -1;
+  renderPanel(); refreshWheel();
+  toast("Wheel reshuffled","ok");
+}
+
+/* ============================================================================
+   RESULT OVERLAY
+   ============================================================================ */
+function showResult(wid, sliceId, color){
+  const s = DB.get(sliceId); if(!s) return;
+  const w = DB.get(wid);
+  const d = s.data;
+  const ini = (d.name||"?").trim().charAt(0).toUpperCase() || "?";
+  const el = document.createElement("div");
+  el.className = "res";
+  el.id = "resultov";
+
+  const draw = ()=>{
+    const cur = DB.get(sliceId).data;
+    const off = cur.enabled === false;
+    el.innerHTML = `<div class="rescard">
+      <div class="glow" style="background:${h(color)}"></div>
+      <div class="kicker">The wheel says</div>
+      <div class="resimg" style="background:linear-gradient(150deg,${h(shade(color,.16))},${h(shade(color,-.28))})">
+        ${cur.image ? `<img src="${h(cur.image)}" alt="${h(cur.name)}">` : `<span class="ini">${h(ini)}</span>`}
+        <button class="btn sm icon addimg" id="rimg" title="${cur.image?"Change picture":"Add a picture"}">${svg("camera")}</button>
+      </div>
+      <h2>${h(cur.name || "Untitled")}</h2>
+      ${cur.note ? `<div class="note">${h(cur.note)}</div>` : ""}
+      <div class="rmeta">
+        <span>${svg("dice")}Landed on ${plural(cur.hits||1,"time")}</span>
+        ${off ? `<span style="color:var(--warm)">${svg("eyeoff")}Off the wheel</span>` : ""}
+        ${w.data.opts.weighted && cur.weight !== 1 ? `<span>${svg("scale")}×${cur.weight}</span>` : ""}
+      </div>
+      <div class="racts">
+        <button class="btn primary wide" id="ragain">${svg("play")} Spin again</button>
+        <button class="btn" id="rtoggle">${svg(off?"undo":"eyeoff")} ${off?"Put back":"Take off"}</button>
+        <button class="btn" id="redit">${svg("pencil")} Edit</button>
+        <button class="btn" id="rclose">Done</button>
+      </div>
+    </div>`;
+    bind();
+  };
+
+  const close = ()=>{
+    el.remove();
+    document.removeEventListener("keydown", key);
+    UI.overlay = null;
+    renderPanel();
+    refreshWheel();
+  };
+  function key(ev){
+    if(ev.key==="Escape"){ ev.preventDefault(); ev.stopPropagation(); close(); }
+    else if(ev.key===" " || ev.key==="Enter"){
+      if(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+      ev.preventDefault(); ev.stopPropagation(); again();
+    }
+  }
+  const again = ()=>{ close(); setTimeout(()=>Spin.start(wid, $("#wheel")), 90); };
+
+  function bind(){
+    $("#rclose",el).addEventListener("click", close);
+    $("#ragain",el).addEventListener("click", again);
+    $("#redit",el).addEventListener("click", ()=>promptEntry(sliceId, draw));
+    $("#rimg",el).addEventListener("click", async ()=>{
+      const src = await pickOneImage();
+      if(!src) return;
+      patch(sliceId, x=>{ x.image = src; });
+      // keep the history thumbnail in step with the entry
+      patch(wid, x=>{ (x.history||[]).forEach(r=>{ if(r.id===sliceId) r.image = src; }); });
+      draw();
+      toast("Picture added","ok");
+    });
+    $("#rtoggle",el).addEventListener("click", ()=>{
+      patch(sliceId, x=>{ x.enabled = x.enabled===false; });
+      draw();
+    });
+  }
+
+  el.addEventListener("click", ev=>{ if(ev.target===el) close(); });
+  document.addEventListener("keydown", key);
+  UI.overlay = "result";
+  $("#overlays").appendChild(el);
+  draw();
+}
+
+/* ============================================================================
+   MODALS
+   ============================================================================ */
+let modalStack = [];
+function openModal(opt){
+  const el = document.createElement("div");
+  el.className = "ov";
+  el.innerHTML = `<div class="modal ${opt.cls||""}">
+    <div class="mod-h">
+      ${opt.icon?`<div style="width:34px;height:34px;border-radius:10px;background:var(--brand-dim);color:var(--brand-2);display:grid;place-items:center;flex:0 0 34px">${svg(opt.icon)}</div>`:""}
+      <div style="flex:1;min-width:0"><h3>${opt.title}</h3>${opt.sub?`<div class="sub">${opt.sub}</div>`:""}</div>
+      <button class="btn icon ghost" data-x>${svg("x")}</button>
+    </div>
+    <div class="mod-b">${opt.body||""}</div>
+    <div class="mod-f">
+      ${opt.extra||""}<div class="sp"></div>
+      ${opt.hideCancel?"":`<button class="btn" data-cancel>${opt.cancelLabel||"Cancel"}</button>`}
+      <button class="btn ${opt.danger?"danger":"primary"}" data-ok>${opt.okLabel||"OK"}</button>
+    </div>
+  </div>`;
+  const root = $(".modal",el);
+  const close = ran=>{
+    el.remove();
+    modalStack = modalStack.filter(m=>m.el!==el);
+    document.removeEventListener("keydown",key);
+    if(!ran) opt.onCancel && opt.onCancel();
+    opt.onClose && opt.onClose();
+  };
+  const ok = ()=>{ const r = opt.onOk ? opt.onOk(root) : true; if(r!==false) close(true); };
+  $("[data-ok]",root).addEventListener("click",ok);
+  $("[data-x]",root).addEventListener("click",()=>close(false));
+  $("[data-cancel]",root)?.addEventListener("click",()=>close(false));
+  el.addEventListener("click",ev=>{ if(ev.target===el) close(false); });
+  function key(ev){
+    if(ev.key==="Escape"){ ev.preventDefault(); ev.stopPropagation(); close(false); }
+    if(ev.key==="Enter" && !ev.shiftKey){
+      if(ev.target.tagName==="TEXTAREA") return;
+      ev.preventDefault(); ev.stopPropagation(); ok();
+    }
+  }
+  document.addEventListener("keydown",key);
+  modalStack.push({el,close});
+  $("#overlays").appendChild(el);
+  opt.onOpen && opt.onOpen(root);
+  return { close };
+}
+function closeModal(){ const m = modalStack[modalStack.length-1]; if(m) m.close(false); }
+function confirmModal(opt){
+  openModal({ ...opt, icon:opt.icon||"trash", onOk(){ opt.onOk && opt.onOk(); return true; } });
+}
+
+/* ------------------------------------------------------------ wheel dialog */
+function promptWheel(id){
+  const w = id ? DB.get(id) : null;
+  openModal({
+    icon:"wheel",
+    title: w ? "Rename wheel" : "New wheel",
+    sub: w ? "" : "Give it a name — you can add entries straight away.",
+    okLabel: w ? "Save" : "Create",
+    body:`<div class="field">
+        <label>Name</label>
+        <input class="inp" id="wn" value="${h(w?w.data.name:"")}" placeholder="What's for dinner?">
+      </div>
+      <div class="field">
+        <label>Description <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+        <textarea class="inp" id="wd" style="min-height:58px" placeholder="A note for whoever opens this wheel">${h(w?w.data.desc:"")}</textarea>
+      </div>
+      ${w?"":`<div class="field">
+        <label>Starting entries <span style="text-transform:none;letter-spacing:0;font-weight:400">(one per line, optional)</span></label>
+        <textarea class="inp" id="ws" placeholder="Pizza&#10;Thai&#10;Whatever's in the fridge"></textarea>
+        <div class="hint">You can keep adding entries forever once the wheel exists.</div>
+      </div>`}`,
+    onOpen(root){ setTimeout(()=>{ $("#wn",root).focus(); $("#wn",root).select(); },30); },
+    onOk(root){
+      const name = $("#wn",root).value.trim();
+      if(!name){ toast("A name is needed","err"); return false; }
+      const desc = $("#wd",root).value.trim();
+      if(w){
+        patch(w.id, d=>{ d.name = name; d.desc = desc; });
+        render(); toast("Renamed","ok");
+      }else{
+        const seed = ($("#ws",root).value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+        const nid = createWheel(name, seed);
+        patch(nid, d=>{ d.desc = desc; });
+        go("#/w/"+nid);
+      }
+      return true;
+    }
+  });
+}
+
+function duplicateWheel(id){
+  const w = DB.get(id); if(!w) return;
+  const nid = uid("w");
+  const order = DB.wheelList().reduce((m,x)=>Math.max(m,x.data.order??0),0)+1;
+  DB.put({ id:nid, type:"wheel", data:{ ...JSON.parse(JSON.stringify(w.data)),
+    name: w.data.name+" (copy)", order, createdAt:now(), spins:0, history:[] } });
+  DB.slicesOf(id).forEach(s=>{
+    DB.put({ id:uid("s"), type:"slice", wheelId:nid, data:{ ...JSON.parse(JSON.stringify(s.data)), hits:0, createdAt:now() } });
+  });
+  render();
+  toast("Wheel duplicated","ok");
+}
+
+function confirmDeleteWheel(id){
+  const w = DB.get(id); if(!w) return;
+  const n = DB.slicesOf(id).length;
+  confirmModal({
+    title:"Delete this wheel?", danger:true, okLabel:"Delete",
+    sub:h(w.data.name),
+    body:`<p style="font-size:13.5px;color:var(--text-2);line-height:1.6">
+      This removes the wheel and its ${plural(n,"entry","entries")}${Cloud.cfg?", for everyone it's shared with":""}. It can't be undone.</p>`,
+    onOk(){ DB.remove(id); if(Route.wid===id) go("#/"); else render(); toast("Wheel deleted"); }
+  });
+}
+
+/* ------------------------------------------------------------ entry dialog */
+function promptEntry(id, after){
+  const s = DB.get(id); if(!s) return;
+  const opts = wheelOpts(s.wheelId);
+  let img = s.data.image;
+  openModal({
+    icon:"pencil", title:"Edit entry",
+    body:`<div class="row2" style="margin-bottom:15px">
+        <div class="field" style="margin:0">
+          <label>Name</label>
+          <input class="inp" id="en" value="${h(s.data.name)}">
+        </div>
+        <div class="field" style="margin:0;max-width:120px">
+          <label>Weight</label>
+          <input class="inp" id="ew" type="number" min="0.1" step="0.5" value="${s.data.weight}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Picture</label>
+        <div class="imgbox">
+          <div class="img-prev ${img?"has":""}" id="ip">
+            ${img?`<img src="${h(img)}" alt="">`:`${svg("image")}<span>No picture yet</span>`}
+          </div>
+          <div class="img-acts">
+            <button class="btn sm" id="ipick">${svg("camera")} ${img?"Replace":"Choose a picture"}</button>
+            ${img?`<button class="btn sm danger" id="idel">${svg("trash")} Remove</button>`:""}
+          </div>
+        </div>
+        <div class="hint">Shown large when the wheel lands on this entry.</div>
+      </div>
+      <div class="field">
+        <label>Note <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+        <textarea class="inp" id="eo" style="min-height:64px" placeholder="Anything to show alongside the result">${h(s.data.note)}</textarea>
+      </div>
+      <div class="field">
+        <label>Slice colour</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="color" id="ec" value="${h(s.data.color || "#8b7cff")}" style="width:46px;height:34px;border:1px solid var(--line);border-radius:9px;background:var(--bg-2);padding:2px;cursor:pointer">
+          <button class="btn sm" id="ecauto">${svg("sparkle")} Use the palette</button>
+          <span style="font-size:12px;color:var(--text-3)" id="eclab">${s.data.color?"Custom":"Palette: "+(PALETTES[opts.palette]?.label||"")}</span>
+        </div>
+      </div>`,
+    extra:`<button class="btn danger sm" id="edel">${svg("trash")} Delete</button>`,
+    okLabel:"Save",
+    onOpen(root){
+      setTimeout(()=>{ $("#en",root).focus(); $("#en",root).select(); },30);
+      let custom = !!s.data.color;
+      const ec = $("#ec",root);
+      ec.addEventListener("input", ()=>{ custom = true; $("#eclab",root).textContent = "Custom"; });
+      $("#ecauto",root).addEventListener("click", ()=>{
+        custom = false; $("#eclab",root).textContent = "Palette: "+(PALETTES[opts.palette]?.label||"");
+      });
+      root.__custom = ()=>custom;
+      $("#ipick",root).addEventListener("click", async ()=>{
+        const src = await pickOneImage();
+        if(!src) return;
+        img = src;
+        const p = $("#ip",root);
+        p.classList.add("has");
+        p.innerHTML = `<img src="${h(src)}" alt="">`;
+        $("#ipick",root).innerHTML = svg("camera")+" Replace";
+      });
+      $("#idel",root)?.addEventListener("click", ()=>{
+        img = "";
+        const p = $("#ip",root);
+        p.classList.remove("has");
+        p.innerHTML = svg("image")+"<span>No picture yet</span>";
+        $("#idel",root).remove();
+        $("#ipick",root).innerHTML = svg("camera")+" Choose a picture";
+      });
+      $("#edel",root).addEventListener("click", ()=>{
+        DB.remove(id); closeModal(); renderPanel(); refreshWheel(); toast("Entry deleted");
+      });
+    },
+    onOk(root){
+      const name = $("#en",root).value.trim();
+      if(!name){ toast("An entry needs a name","err"); return false; }
+      const weight = clamp(parseFloat($("#ew",root).value)||1, 0.1, 999);
+      const custom = root.__custom();
+      patch(id, d=>{
+        d.name = name; d.weight = weight; d.image = img;
+        d.note = $("#eo",root).value.trim();
+        d.color = custom ? $("#ec",root).value : "";
+      });
+      renderPanel(); refreshWheel();
+      if(after) after();
+      return true;
+    }
+  });
+}
+
+/* -------------------------------------------------------------- bulk paste */
+function openBulk(wid){
+  openModal({
+    icon:"upload", cls:"wide", title:"Paste a list",
+    sub:"One entry per line — paste as many as you like.",
+    okLabel:"Add entries",
+    body:`<div class="field">
+        <textarea class="inp" id="bt" style="min-height:200px;font-family:var(--mono);font-size:13px" placeholder="Ada Lovelace&#10;Grace Hopper&#10;Katherine Johnson"></textarea>
+      </div>
+      <label class="checkrow"><input type="checkbox" id="bcomma"> Also split on commas</label>
+      <label class="checkrow"><input type="checkbox" id="bclear"> Replace the current entries</label>
+      <label class="checkrow"><input type="checkbox" id="bdedupe" checked> Skip names already on the wheel</label>`,
+    onOpen(root){ setTimeout(()=>$("#bt",root).focus(),30); },
+    onOk(root){
+      const raw = $("#bt",root).value;
+      const sep = $("#bcomma",root).checked ? /[\r\n,]+/ : /\r?\n/;
+      let names = raw.split(sep).map(s=>s.trim()).filter(Boolean);
+      if(!names.length){ toast("Nothing to add","err"); return false; }
+      if($("#bclear",root).checked) DB.slicesOf(wid).forEach(s=>DB.remove(s.id));
+      if($("#bdedupe",root).checked){
+        const have = new Set(DB.slicesOf(wid).map(s=>(s.data.name||"").toLowerCase()));
+        const before = names.length;
+        names = names.filter(n=>{ const k = n.toLowerCase(); if(have.has(k)) return false; have.add(k); return true; });
+        if(before !== names.length) toast(`Skipped ${before-names.length} duplicate${before-names.length>1?"s":""}`);
+      }
+      names.forEach(n=>createSlice(wid, n));
+      renderPanel(); refreshWheel();
+      toast(`Added ${plural(names.length,"entry","entries")}`,"ok");
+      return true;
+    }
+  });
+}
+
+/* ============================================================================
+   BACKUP I/O
+   ============================================================================ */
+function download(obj, filename){
+  const blob = new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+function exportBackup(){
+  download({ app:"wheel-of-everything", v:1, exported:now(), nodes:DB.all() },
+           `wheel-of-everything-${new Date().toISOString().slice(0,10)}.json`);
+  toast("Backup downloaded","ok");
+}
+function exportWheel(wid){
+  const w = DB.get(wid); if(!w) return;
+  download({ app:"wheel-of-everything", v:1, exported:now(), nodes:[w, ...DB.slicesOf(wid)] },
+           `${(w.data.name||"wheel").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()}.json`);
+  toast("Wheel exported","ok");
+}
+function importBackup(){
+  const input = $("#jsonpick");
+  input.value = "";
+  input.onchange = ()=>{
+    const f = (input.files||[])[0]; if(!f) return;
+    const fr = new FileReader();
+    fr.onload = ()=>{
+      let doc;
+      try{ doc = JSON.parse(fr.result); }catch{ toast("That isn't a readable backup","err"); return; }
+      const nodes = Array.isArray(doc) ? doc : doc.nodes;
+      if(!Array.isArray(nodes)){ toast("No wheels found in that file","err"); return; }
+      // Fresh ids so an import never collides with what's already here.
+      const map = new Map();
+      nodes.filter(n=>n.type==="wheel").forEach(n=>map.set(n.id, uid("w")));
+      let wheels = 0, slices = 0;
+      nodes.forEach(n=>{
+        if(n.deleted) return;
+        if(n.type==="wheel"){
+          DB.put({ ...n, id:map.get(n.id), updatedAt:now() }); wheels++;
+        }else if(n.type==="slice" && map.has(n.wheelId)){
+          DB.put({ ...n, id:uid("s"), wheelId:map.get(n.wheelId), updatedAt:now() }); slices++;
+        }
+      });
+      render();
+      toast(`Imported ${plural(wheels,"wheel")} and ${plural(slices,"entry","entries")}`,"ok");
+    };
+    fr.readAsText(f);
+  };
+  input.click();
+}
+
+/* ============================================================================
+   HELP
+   ============================================================================ */
+function openHelp(){
+  openModal({
+    icon:"info", cls:"wide", title:"How it works", okLabel:"Got it", hideCancel:true,
+    body:`<div class="field">
+        <label>The basics</label>
+        <ol class="steps">
+          <li>Make a wheel, then type entries into the box on the right — <b>Enter</b> adds one and keeps the box focused, so you can rattle off a long list.</li>
+          <li>Give an entry a picture with the little swatch beside its name. The picture is what fills the screen when the wheel lands on it.</li>
+          <li>Press <b>Spin</b>, the space bar, or click the wheel itself.</li>
+        </ol>
+      </div>
+      <div class="field">
+        <label>Worth knowing</label>
+        <ol class="steps">
+          <li><b>Weighted slices</b> let one entry take up more of the wheel than another — the odds always match what you can see.</li>
+          <li><b>Retire the winner</b> takes each result off the wheel, which turns it into a draw or a running order. Everything retired can be restored in one click.</li>
+          <li>The wedges are laid out in a <b>random order</b>, so entries you added together don't sit side by side. The sidebar always lists them A–Z, and <b>Reshuffle wheel</b> deals out a fresh arrangement.</li>
+          <li>Every name is printed on its wedge in full — as the wheel fills up the type shrinks to fit rather than being cut short or dropped. Past a few hundred entries it gets very small; turn the names off in Setup if you'd rather have a clean wheel.</li>
+          <li>Entries can be taken off the wheel without deleting them, and put back in one click.</li>
+          <li>History keeps the last ${MAX_HISTORY} results per wheel plus a tally of how often each entry has come up.</li>
+          <li><b>Sharing</b> is optional — connect a free Supabase project and every wheel syncs live across your devices and anyone you share the keys with.</li>
+        </ol>
+      </div>
+      <div class="field">
+        <label>Keyboard</label>
+        <ol class="steps" style="list-style:none;padding-left:0">
+          <li><code>Space</code> spin the wheel &nbsp; <code>N</code> new entry / new wheel</li>
+          <li><code>F</code> presentation mode &nbsp; <code>/</code> filter entries</li>
+          <li><code>E</code> show or hide the side panel &nbsp; <code>Esc</code> back / close</li>
+        </ol>
+      </div>`,
+  });
+}
+
+/* ============================================================================
+   SYNC / SHARING SETUP
+   ============================================================================ */
+const SETUP_SQL = `-- Run once in Supabase → SQL Editor → New query → Run
+create table if not exists wheel_nodes (
+  id          text primary key,
+  type        text not null,
+  wheel_id    text,
+  data        jsonb not null default '{}'::jsonb,
+  deleted     boolean not null default false,
+  updated_at  timestamptz not null default now(),
+  client_id   text
+);
+alter table wheel_nodes enable row level security;
+drop policy if exists wheel_open on wheel_nodes;
+create policy wheel_open on wheel_nodes
+  for all using (true) with check (true);
+alter publication supabase_realtime add table wheel_nodes;
+
+-- picture storage (optional but recommended)
+insert into storage.buckets (id, name, public)
+values ('wheel-images','wheel-images', true)
+on conflict (id) do nothing;
+drop policy if exists wheel_img_read on storage.objects;
+create policy wheel_img_read on storage.objects
+  for select using (bucket_id = 'wheel-images');
+drop policy if exists wheel_img_write on storage.objects;
+create policy wheel_img_write on storage.objects
+  for insert with check (bucket_id = 'wheel-images');`;
+
+function openSyncModal(){
+  const cfg = Cloud.cfg || {};
+  const connected = !!cfg.url;
+  openModal({
+    cls:"wide", icon:"cloud",
+    title: connected ? "Sharing & sync" : "Set up sharing",
+    sub: connected ? syncLabel() + (Cloud.statusMsg?` — ${h(Cloud.statusMsg)}`:"") : "Right now your wheels are saved on this device only.",
+    body:`<div class="field">
+        <label>How it works</label>
+        <div class="hint" style="margin-top:0">
+          Wheels sync through a free <b>Supabase</b> project — a hosted database with live updates.
+          Anyone you give the two values below edits the same wheels, live, on any device.
+          Pictures get uploaded there too instead of being stored inside this file's data.
+          Without it everything still works; it just stays on this computer.
+        </div>
+      </div>
+      <div class="field">
+        <label>1 · Create the project</label>
+        <ol class="steps">
+          <li>Go to <code>supabase.com</code> → sign in → <b>New project</b> (the free tier is plenty).</li>
+          <li>Open <b>SQL Editor</b> → <b>New query</b>, paste the script below, press <b>Run</b>.</li>
+          <li>Open <b>Project Settings → API</b> and copy the <b>Project URL</b> and the <b>anon public</b> key.</li>
+        </ol>
+        <pre class="code" id="sql">${h(SETUP_SQL)}</pre>
+        <button class="btn sm" id="copysql" style="margin-top:9px">${svg("copy")} Copy SQL</button>
+      </div>
+      <div class="field">
+        <label>2 · Project URL</label>
+        <input class="inp" id="curl" placeholder="https://xxxxxxxx.supabase.co" value="${h(cfg.url||"")}" spellcheck="false">
+        <div class="hint">If it ends in <code>/rest/v1</code> that's fine — it gets trimmed automatically.</div>
+      </div>
+      <div class="field">
+        <label>3 · Anon public key</label>
+        <textarea class="inp" id="ckey" placeholder="eyJhbGciOi…" spellcheck="false" style="min-height:70px;font-family:var(--mono);font-size:12px">${h(cfg.key||"")}</textarea>
+        <div class="hint">The anon key is meant to be public, but anyone holding these two values can edit or erase your wheels — share them only with people you trust.</div>
+      </div>`,
+    extra: connected?`<button class="btn danger sm" id="disc">Disconnect</button>`:"",
+    okLabel: connected?"Save":"Connect",
+    onOpen(root){
+      $("#copysql",root).addEventListener("click", async()=>{
+        try{ await navigator.clipboard.writeText(SETUP_SQL); toast("SQL copied","ok"); }
+        catch{ const r=document.createRange(); r.selectNode($("#sql",root)); getSelection().removeAllRanges(); getSelection().addRange(r); toast("Press ⌘C to copy"); }
+      });
+      $("#disc",root)?.addEventListener("click", ()=>{
+        Cloud.disconnect(); closeModal(); toast("Disconnected — this device is local only");
+      });
+    },
+    onOk(root){
+      const url = sanitizeSupabaseUrl($("#curl",root).value);
+      const key = $("#ckey",root).value.trim();
+      if(!url || !key){
+        if(!url && !key){ Cloud.disconnect(); return true; }
+        toast("Both the URL and the key are needed","err"); return false;
+      }
+      if(!/^https:\/\/.+/.test(url)){ toast("The URL should start with https://","err"); return false; }
+      Cloud.save({url,key});
+      toast("Connecting…");
+      setTimeout(async()=>{
+        if(Cloud.status==="on"){
+          try{ await Cloud.pushAll(); toast("Connected — wheels uploaded","ok"); }
+          catch(err){ toast("Connected, but upload failed: "+(err.message||""),"err"); }
+        }
+      },1800);
+      return true;
+    }
+  });
+}
+
+/* ============================================================================
+   GLOBAL KEYS
+   ============================================================================ */
+document.addEventListener("keydown", ev=>{
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||"")
+              || document.activeElement?.isContentEditable;
+  if(modalStack.length || $("#resultov")) return;   // those handle their own keys
+
+  if(ev.key === "Escape"){
+    if(UI.present){ togglePresent(); return; }
+    if(UI.panelOpen){ UI.panelOpen=false; $(".panel")?.classList.remove("open"); return; }
+    if(typing){ document.activeElement.blur(); return; }
+    if(Route.name==="wheel") go("#/");
+    return;
+  }
+  if(typing) return;
+
+  if(ev.key === " " && Route.name==="wheel"){
+    ev.preventDefault();
+    if(!Spin.running) Spin.start(Route.wid, $("#wheel"));
+  }
+  else if(ev.key.toLowerCase() === "n"){
+    ev.preventDefault();
+    if(Route.name==="wheel"){ UI.tab="entries"; renderPanel(); $("#qadd")?.focus(); }
+    else promptWheel(null);
+  }
+  else if(ev.key.toLowerCase() === "f" && Route.name==="wheel"){ ev.preventDefault(); togglePresent(); }
+  else if(ev.key.toLowerCase() === "e" && Route.name==="wheel"){
+    ev.preventDefault();
+    UI.panelHidden = !UI.panelHidden; render();
+  }
+  else if(ev.key === "/" && Route.name==="wheel"){
+    ev.preventDefault();
+    UI.tab = "entries"; renderPanel();
+    ($("#qfilter") || $("#qadd"))?.focus();
+  }
+});
+
+/* ============================================================================
+   BOOT
+   ============================================================================ */
+function seedFirstRun(){
+  if(Prefs.get().seeded || DB.wheelList().length) return;
+  Prefs.set("seeded", true);
+  const id = createWheel("What's for dinner?",
+    ["Pizza","Thai","Ramen","Tacos","Curry","Roast","Pasta","Whatever's in the fridge"]);
+  patch(id, d=>{
+    d.desc = "A starter wheel — rename it, empty it, or spin it as it is.";
+    d.opts = { ...DEFAULT_OPTS, palette:"sunset" };
+  });
+}
+
+loadLocal();
+seedFirstRun();
+Object.assign(Route, parseHash());
+Cloud.init();
+render();
+
+/* Drive the winner's slow pulse without re-running the whole render loop. It
+   settles into a static highlight after WINNER_PULSE_MS, and the timer then
+   costs nothing but the condition check. */
+setInterval(()=>{
+  if(Spin.running || Route.name!=="wheel" || $("#resultov")) return;
+  if(winnerPulsing()) refreshWheel();
+}, 90);
+</script>
+</body>
+</html>
