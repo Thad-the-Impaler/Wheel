@@ -348,7 +348,7 @@ svg{width:1em;height:1em;flex:0 0 auto}
   background:rgba(5,6,11,.84);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);animation:ovin .26s var(--ease);
 }
 .rescard{
-  width:100%;max-width:452px;background:linear-gradient(170deg,var(--panel),var(--bg-2));
+  width:100%;max-width:452px;max-height:calc(100vh - 48px);overflow-y:auto;background:linear-gradient(170deg,var(--panel),var(--bg-2));
   border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:var(--shadow);
   animation:resin .5s var(--ease);position:relative;
 }
@@ -358,11 +358,35 @@ svg{width:1em;height:1em;flex:0 0 auto}
   position:relative;text-align:center;padding:19px 22px 0;font-size:11px;font-weight:700;letter-spacing:2.4px;
   text-transform:uppercase;color:var(--text-3);
 }
+/* The whole picture, never a crop. The frame takes the picture's own shape
+   (within limits), so most images fill it edge to edge; anything too tall or
+   too wide to fit those limits is letterboxed against a blurred copy of
+   itself rather than bars. */
 .resimg{
-  position:relative;margin:15px 22px 0;height:250px;border-radius:18px;overflow:hidden;
+  position:relative;margin:15px 22px 0;border-radius:18px;overflow:hidden;
   display:grid;place-items:center;border:1px solid rgba(255,255,255,.09);
+  /* A definite height, set from the picture's own shape once it loads. It has
+     to be a real length, not just an aspect-ratio: the image's max-height:100%
+     can only resolve against a parent whose height is definite. */
+  height:250px;max-height:min(46vh,400px);background:#0b0d15;
+  transition:height .3s var(--ease);
 }
-.resimg img{width:100%;height:100%;object-fit:cover;display:block}
+.resimg .bg{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:blur(26px) saturate(1.4);transform:scale(1.3);opacity:.55;
+}
+.resimg img.main{
+  /* Positioned against the frame itself, not against a grid row: the row is
+     content-sized, so a percentage max-height there resolves against the
+     picture's own height and constrains nothing. inset+margin:auto centres it
+     while max-width/max-height shrink it to fit, keeping its proportions. */
+  position:absolute;inset:0;margin:auto;
+  max-width:100%;max-height:100%;width:auto;height:auto;
+  display:block;border-radius:2px;
+  box-shadow:0 12px 36px -16px rgba(0,0,0,.95);
+  opacity:0;transition:opacity .28s var(--ease);
+}
+.resimg img.main.shown{opacity:1}
 .resimg .ini{font-family:var(--display);font-size:96px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:-3px;text-shadow:0 3px 14px rgba(0,0,0,.35)}
 .resimg .addimg{
   position:absolute;bottom:10px;right:10px;background:rgba(10,11,17,.82);backdrop-filter:blur(6px);
@@ -586,7 +610,7 @@ body.present #exitpresent{display:inline-flex}
   .tb-brand span{display:none}
   .sync span:last-child{display:none}
   .sync{padding:8px}
-  .resimg{height:200px}
+  .resimg{max-height:38vh}
   #hidepanel{display:none}
   #closepanel{display:inline-flex}
 }
@@ -2387,6 +2411,8 @@ function showResult(wid, sliceId, color){
   const el = document.createElement("div");
   el.className = "res";
   el.id = "resultov";
+  let refit = null;
+  const onResize = debounce(()=>{ if(refit) refit(); }, 120);
 
   const draw = ()=>{
     const cur = DB.get(sliceId).data;
@@ -2395,7 +2421,8 @@ function showResult(wid, sliceId, color){
       <div class="glow" style="background:${h(color)}"></div>
       <div class="kicker">The wheel says</div>
       <div class="resimg" style="background:linear-gradient(150deg,${h(shade(color,.16))},${h(shade(color,-.28))})">
-        ${cur.image ? `<img src="${h(cur.image)}" alt="${h(cur.name)}">` : `<span class="ini">${h(ini)}</span>`}
+        ${cur.image ? `<img class="bg" src="${h(cur.image)}" alt="" aria-hidden="true">
+             <img class="main" src="${h(cur.image)}" alt="${h(cur.name)}">` : `<span class="ini">${h(ini)}</span>`}
         <button class="btn sm icon addimg" id="rimg" title="${cur.image?"Change picture":"Add a picture"}">${svg("camera")}</button>
       </div>
       <h2>${h(cur.name || "Untitled")}</h2>
@@ -2420,6 +2447,7 @@ function showResult(wid, sliceId, color){
 
   const close = ()=>{
     el.remove();
+    window.removeEventListener("resize", onResize);
     document.removeEventListener("keydown", key);
     UI.overlay = null;
     renderPanel();
@@ -2434,7 +2462,36 @@ function showResult(wid, sliceId, color){
   }
   const again = ()=>{ close(); setTimeout(()=>Spin.start(wid, $("#wheel")), 90); };
 
+  /** Give the frame the picture's own proportions so the whole thing shows
+   *  without bars. Very tall or very wide pictures stop at the limits and sit
+   *  on the blurred copy behind them. */
+  function fitImage(){
+    const box = $(".resimg", el), main = $(".resimg img.main", el);
+    if(!box || !main) return;
+    const apply = ()=>{
+      // The frame is measured, so wait for it to actually have a width — a
+      // background tab reports zero until it is painted.
+      const w = box.clientWidth;
+      if(!w){ requestAnimationFrame(apply); return; }
+      const ar = main.naturalWidth / main.naturalHeight;
+      if(ar > 0){
+        const wide = clamp(ar, 0.62, 2.1);            // limits for the frame
+        const cap = Math.min(innerHeight * 0.46, 400);
+        box.style.height = Math.round(clamp(w / wide, 190, cap)) + "px";
+      }
+      main.classList.add("shown");
+    };
+    if(main.complete && main.naturalWidth) apply();
+    else{
+      main.addEventListener("load", apply, { once:true });
+      main.addEventListener("error", ()=>main.classList.add("shown"), { once:true });
+    }
+    // the frame is sized in pixels, so it has to be redone if the window moves
+    refit = apply;
+  }
+
   function bind(){
+    fitImage();
     $("#rclose",el).addEventListener("click", close);
     $("#ragain",el).addEventListener("click", again);
     $("#redit",el).addEventListener("click", ()=>promptEntry(sliceId, draw));
@@ -2447,6 +2504,7 @@ function showResult(wid, sliceId, color){
 
   el.addEventListener("click", ev=>{ if(ev.target===el) close(); });
   document.addEventListener("keydown", key);
+  window.addEventListener("resize", onResize);
   UI.overlay = "result";
   $("#overlays").appendChild(el);
   draw();
