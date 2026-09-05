@@ -2125,10 +2125,7 @@ function tabEntries(w, all){
         <div class="sp"></div>
         <button class="btn sm ghost" id="restoreall">${svg("undo")} Restore all</button>
       </div>
-      <div class="elist">${off.map(s=>entryRow(s, "#3a4268", opts)).join("")}</div>` : ""}
-    ${all.length ? `<div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn sm danger" id="clearall">${svg("trash")} Remove all entries</button>
-      </div>` : ""}`;
+      <div class="elist">${off.map(s=>entryRow(s, "#3a4268", opts)).join("")}</div>` : ""}`;
 }
 
 function entryRow(s, color, opts){
@@ -2307,14 +2304,6 @@ function bindPanel(){
   $("#restoreall")?.addEventListener("click", ()=>{
     DB.slicesOf(wid).filter(s=>s.data.enabled===false).forEach(s=>patch(s.id, d=>{ d.enabled = true; }));
     renderPanel(); refreshWheel(); toast("Everything is back on the wheel","ok");
-  });
-  $("#clearall")?.addEventListener("click", ()=>{
-    const n = DB.slicesOf(wid).length;
-    confirmModal({
-      title:"Remove every entry?", icon:"trash", danger:true, okLabel:"Remove all",
-      body:`<p style="font-size:13.5px;color:var(--text-2);line-height:1.6">This clears all ${n} entries from <b>${h(w.data.name)}</b>. The wheel itself stays, and its history is kept.</p>`,
-      onOk(){ DB.slicesOf(wid).forEach(s=>DB.remove(s.id)); renderPanel(); refreshWheel(); toast("Entries removed"); }
-    });
   });
   $("#closepanel")?.addEventListener("click", ()=>{
     UI.panelOpen = false; $(".panel")?.classList.remove("open");
