@@ -1780,11 +1780,10 @@ function render(){
 /* ------------------------------------------------------------------ topbar */
 function topbar(){
   const w = Route.name==="wheel" ? DB.get(Route.wid) : null;
-  const n = w ? DB.liveOf(w.id).length : 0;
   return `<div class="topbar">
     ${w ? `<button class="btn icon ghost" id="back" title="All wheels (Esc)">${svg("left")}</button>`
         : `<div class="tb-brand" id="brand">${svg("wheel","mark")}<span>The Wheel of Everything</span></div>`}
-    ${w ? `<div class="tb-title" id="wname" title="Rename">${h(w.data.name)}<span class="n">${plural(n,"entry","entries")}</span></div>` : ""}
+    ${w ? `<div class="tb-title" id="wname" title="Rename">${h(w.data.name)}<span class="n">${entryCount(w)}</span></div>` : ""}
     <div class="tb-spacer"></div>
     ${w ? `<button class="btn icon ghost panel-toggle" id="ptoggle" title="Entries">${svg("list")}</button>
            <button class="btn icon ghost" id="present" title="Presentation mode (F)">${svg("expand")}</button>` : ""}
@@ -1793,6 +1792,15 @@ function topbar(){
     </button>
   </div>`;
 }
+/** Entries are counted two ways — how many exist, and how many are actually
+ *  on the wheel. They only differ when some have been taken off, so say so
+ *  explicitly rather than letting the bare word "entries" mean either. */
+function entryCount(w){
+  const total = DB.slicesOf(w.id).length;
+  const live  = DB.liveOf(w.id).length;
+  return live === total ? plural(total,"entry","entries") : `${live} of ${total} on the wheel`;
+}
+
 function syncClass(){
   return Cloud.status==="on" ? "on" : Cloud.status==="err" ? "err"
        : (Cloud.status==="saving"||Cloud.status==="connecting") ? "sav" : "off";
@@ -2037,7 +2045,7 @@ function renderStageChrome(){
   const busy = Spin.running, empty = n === 0;
   if(btn){ btn.disabled = busy || empty; btn.textContent = busy ? "Spinning…" : empty ? "Nothing on the wheel" : "Spin the wheel"; }
   if(hub){ hub.disabled = busy || empty; }
-  const t = $("#wname"); if(t) t.innerHTML = h(w.data.name)+`<span class="n">${plural(n,"entry","entries")}</span>`;
+  const t = $("#wname"); if(t) t.innerHTML = h(w.data.name)+`<span class="n">${entryCount(w)}</span>`;
   const lr = $("#lastres");
   if(lr){
     const html = busy ? "" : lastResChip(w);
@@ -2073,9 +2081,8 @@ function togglePresent(){
    ============================================================================ */
 function panelHtml(w){
   const all = DB.slicesOf(w.id);
-  const live = all.filter(s=>s.data.enabled!==false);
   const tabs = [
-    ["entries","list","Entries", live.length],
+    ["entries","list","Entries", all.length],
     ["history","clock","History", (w.data.history||[]).length],
     ["setup","sliders","Setup", null],
   ];
