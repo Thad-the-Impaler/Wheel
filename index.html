@@ -500,6 +500,32 @@ pre.code{
 .isfoot button:hover{background:var(--brand-dim)}
 .isfoot button svg{width:12px;height:12px}
 
+/* ---- rapid fill mode ---- */
+.fill-prog{height:4px;border-radius:99px;background:var(--panel-3);overflow:hidden;margin-bottom:18px}
+.fill-prog i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand),var(--hot));transition:width .35s var(--ease)}
+.fill-for{font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--text-3);text-align:center}
+.fill-name{
+  font-family:var(--display);font-size:clamp(21px,4.4vw,29px);font-weight:700;letter-spacing:-.4px;
+  text-align:center;margin:5px 0 16px;line-height:1.2;word-break:break-word;
+}
+.fill-zone{
+  border:1.5px dashed var(--line);border-radius:var(--radius);background:var(--bg-2);
+  display:grid;place-items:center;gap:11px;padding:30px 22px;text-align:center;
+  color:var(--text-3);font-size:13px;line-height:1.6;transition:.16s var(--ease);
+}
+.fill-zone svg{width:30px;height:30px;opacity:.45}
+.fill-zone kbd{
+  font-family:var(--font);font-size:12px;background:var(--panel-3);border:1px solid var(--line);
+  border-radius:5px;padding:2px 7px;color:var(--text);font-weight:600;
+}
+.fill-zone.over{border-color:var(--brand);border-style:solid;background:var(--brand-dim);color:var(--brand-2)}
+.fill-zone.busy{border-color:var(--brand);color:var(--brand-2)}
+.fill-acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.fill-acts .btn{flex:1;justify-content:center;min-width:132px}
+.fill-done{display:grid;place-items:center;gap:12px;padding:38px 20px;text-align:center;color:var(--text-2);font-size:14px}
+.fill-done svg{width:34px;height:34px;color:var(--ok)}
+.fill-skipped{font-size:11.5px;color:var(--text-3);text-align:center;margin-top:12px}
+
 /* the current picture, shown in the dialog's header slot */
 .ishead-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:10px}
 
@@ -672,6 +698,7 @@ const ICON = {
   dice:'<rect x="4" y="4" width="16" height="16" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
   more:'<circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor"/>',
   play:'<path d="M8 5.5 18.5 12 8 18.5v-13Z" fill="currentColor"/>',
+  external:'<path d="M13.5 4.5H19.5V10.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.5 4.5 11 13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M18 14.5v4a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
   info:'<circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="8" r="1.15" fill="currentColor"/>',
 };
 /* Some glyphs aren't visually centred in the 24x24 box, so they look off
@@ -1126,6 +1153,22 @@ function pickOneImage(){
    image API, so pasting or dragging (below) is the route for anything these
    two don't carry.
    ============================================================================ */
+/** A normal web image search, for the pictures the open catalogues don't
+ *  carry. Opened in a tab you copy or drag out of — the results themselves
+ *  can't be read from here, and shouldn't be scraped. */
+const WEB_SEARCHES = [
+  { key:"google", label:"Google Images", url:q=>"https://www.google.com/search?tbm=isch&q="+encodeURIComponent(q) },
+  { key:"bing",   label:"Bing Images",   url:q=>"https://www.bing.com/images/search?q="+encodeURIComponent(q) },
+  { key:"ddg",    label:"DuckDuckGo",    url:q=>"https://duckduckgo.com/?iax=images&ia=images&q="+encodeURIComponent(q) },
+];
+function webSearchFor(name){
+  const key = Prefs.get().webSearch || "google";
+  const eng = WEB_SEARCHES.find(e=>e.key===key) || WEB_SEARCHES[0];
+  window.open(eng.url(name||""), "_blank", "noopener");
+}
+const webSearchName = () =>
+  (WEB_SEARCHES.find(e=>e.key===(Prefs.get().webSearch||"google")) || WEB_SEARCHES[0]).label;
+
 /** Prefer the API's own explanation over a bare status code. */
 async function detailOf(r){
   try{
@@ -1208,24 +1251,29 @@ function creditOf(item){
   return bits ? { text: bits, url: item.page || "" } : null;
 }
 
-/** Read an image out of a paste or a drag. Handles a real file, and also the
- *  URL you get when dragging straight out of another browser tab. */
-async function imageFromTransfer(dt){
-  const file = [...(dt.files||[])].find(f=>f.type.startsWith("image/"));
-  if(file) return { src: await fileToSrc(file), linked:false };
-
-  const item = [...(dt.items||[])].find(i=>i.kind==="file" && i.type.startsWith("image/"));
-  if(item){
-    const f = item.getAsFile();
-    if(f) return { src: await fileToSrc(f), linked:false };
+/** Every image in a paste or a drop, in order. Handles real files (including
+ *  a multi-file drop from the Finder), and the URL you get when dragging or
+ *  copying straight out of another browser tab. */
+async function imagesFromTransfer(dt){
+  let files = [...(dt.files||[])].filter(f=>f.type.startsWith("image/"));
+  if(!files.length){
+    files = [...(dt.items||[])]
+      .filter(i=>i.kind==="file" && i.type.startsWith("image/"))
+      .map(i=>i.getAsFile()).filter(Boolean);
+  }
+  if(files.length){
+    const out = [];
+    for(const f of files) out.push({ src: await fileToSrc(f, 1000), linked:false });
+    return out;
   }
 
   const html = dt.getData?.("text/html") || "";
   const m = html.match(/<img[^>]+src\s*=\s*["']([^"']+)["']/i);
   const url = (m && m[1]) || dt.getData?.("text/uri-list") || dt.getData?.("text/plain") || "";
-  if(/^https?:|^data:image\//i.test(url.trim())) return adoptImage({ full:url.trim() });
-  return null;
+  if(/^https?:|^data:image\//i.test(url.trim())) return [ await adoptImage({ full:url.trim() }) ];
+  return [];
 }
+async function imageFromTransfer(dt){ return (await imagesFromTransfer(dt))[0] || null; }
 
 async function applyImage(id, got, item){
   if(!got || !got.src) return false;
@@ -2011,6 +2059,7 @@ function panelHtml(w){
     }</div>
     <div class="pfoot ${UI.tab==="entries"?"":"only-close"}">
       ${UI.tab==="entries" ? `
+        ${all.some(s=>!s.data.image) ? `<button class="btn sm primary" id="fillpics">${svg("image")} Add pictures</button>` : ""}
         <button class="btn sm" id="bulk">${svg("upload")} Paste a list</button>
         <button class="btn sm" id="shuffle2">${svg("shuffle")} Reshuffle wheel</button>` : ""}
       <div style="flex:1"></div>
@@ -2155,6 +2204,13 @@ function tabSetup(w){
       </div>
     </div>
     <div class="field">
+      <label>Picture search</label>
+      <div style="display:flex;gap:6px">
+        ${WEB_SEARCHES.map(e=>`<button class="btn sm ${(Prefs.get().webSearch||"google")===e.key?"on":""}" data-web="${e.key}" style="flex:1;justify-content:center">${e.label.replace(/ Images$/,"")}</button>`).join("")}
+      </div>
+      <div class="hint">Which search the <b>Add pictures</b> button opens. Copy an image there and paste it back with <code>${PASTE_KEY}</code>.</div>
+    </div>
+    <div class="field">
       <label>Spin length — <span id="durlab">${(+o.duration).toFixed(1)}s</span></label>
       <input type="range" class="slider" id="dur" min="2" max="12" step="0.5" value="${+o.duration}">
     </div>
@@ -2234,6 +2290,7 @@ function bindPanel(){
   $("#closepanel")?.addEventListener("click", ()=>{
     UI.panelOpen = false; $(".panel")?.classList.remove("open");
   });
+  $("#fillpics")?.addEventListener("click", ()=>openFillPictures(wid));
   $("#bulk")?.addEventListener("click", ()=>openBulk(wid));
   $("#shuffle2")?.addEventListener("click", ()=>reshuffleWheel(wid));
 
@@ -2272,6 +2329,9 @@ function bindPanel(){
   const dur = $("#dur");
   dur?.addEventListener("input", ()=>{ $("#durlab").textContent = (+dur.value).toFixed(1)+"s"; });
   dur?.addEventListener("change", ()=>setOpt(wid,"duration",+dur.value));
+  $$("[data-web]").forEach(b=>b.addEventListener("click", ()=>{
+    Prefs.set("webSearch", b.dataset.web); renderPanel();
+  }));
   $("#dupw")?.addEventListener("click", ()=>duplicateWheel(wid));
   $("#expw")?.addEventListener("click", ()=>exportWheel(wid));
   $("#delw")?.addEventListener("click", ()=>confirmDeleteWheel(wid));
@@ -2292,11 +2352,17 @@ function bindRowDrop(){
     el.addEventListener("drop", async ev=>{
       ev.preventDefault();
       el.classList.remove("dropping");
-      const got = await imageFromTransfer(ev.dataTransfer);
-      if(!got) return toast("No picture in what you dropped","err");
-      await applyImage(id, got, null);
+      const got = await imagesFromTransfer(ev.dataTransfer);
+      if(!got.length) return toast("No picture in what you dropped","err");
+      // several at once walk down the list from the row they landed on
+      const rows = $$(".eitem").map(x=>x.dataset.id);
+      const from = Math.max(0, rows.indexOf(id));
+      let n = 0;
+      for(let i=0;i<got.length && from+i<rows.length;i++){
+        await applyImage(rows[from+i], got[i], null); n++;
+      }
       renderPanel(); refreshWheel();
-      toast(got.linked ? "Picture linked from the web" : "Picture added", "ok");
+      toast(n>1 ? `${n} pictures added` : (got[0].linked ? "Picture linked from the web" : "Picture added"), "ok");
     });
   });
 }
@@ -2621,7 +2687,8 @@ function openImagePicker(id, after){
       </div>
       <div id="isout"></div>
       <div class="isfoot" id="isfoot"></div>`,
-    extra:`<button class="btn sm" id="isfile">${svg("camera")} From this computer</button>
+    extra:`<button class="btn sm" id="isweb">${svg("external")} ${h(webSearchName())}</button>
+      <button class="btn sm" id="isfile">${svg("camera")} From this computer</button>
       <button class="btn sm danger ${entry.data.image?"":"hidden"}" id="isclear">${svg("trash")} Remove</button>`,
     onOpen(root){ boot(root); },
     onClose(){ document.removeEventListener("paste", onPaste, true); },
@@ -2661,10 +2728,10 @@ function openImagePicker(id, after){
     const n = missing().length;
     $("#isfoot", root).innerHTML =
       `<span><kbd>${PASTE_KEY}</kbd> to paste, or drag one in</span><span class="sp"></span>` +
-      (n ? `<button id="isnext">${n} more need a picture ${svg("right")}</button>` : "");
+      (n ? `<button id="isnext">Fill the other ${n} ${svg("right")}</button>` : "");
     $("#isnext", root)?.addEventListener("click", ()=>{
-      const nxt = missing()[0];
-      if(nxt){ modal.close(); openImagePicker(nxt.id, after); }
+      modal.close();
+      openFillPictures(entry.wheelId);
     });
     showCurrent(root);
   }
@@ -2768,6 +2835,9 @@ function openImagePicker(id, after){
       settled(root, got.linked ? "Picture linked from the web" : "Picture added");
     });
 
+    $("#isweb", root)?.addEventListener("click", ()=>{
+      webSearchFor($("#isq", root).value.trim() || entry.data.name);
+    });
     $("#isfile", root)?.addEventListener("click", async ()=>{
       const s2 = await pickOneImage();
       if(!s2) return;
@@ -2783,6 +2853,153 @@ function openImagePicker(id, after){
     });
 
     if(query.trim()) run(root); else draw(root);
+  }
+}
+
+/* ------------------------------------------------------------- fill mode */
+/**
+ * Walk the entries that have no picture, one screen at a time. The loop is
+ * meant to be: open the web search, copy a picture, paste. Pasting fills the
+ * entry and moves straight to the next, so a whole wheel is a run of ⌘V.
+ */
+function openFillPictures(wid, startId){
+  const pending = () => DB.slicesOf(wid).filter(s=>!s.data.image && !skipped.has(s.id));
+  const skipped = new Set();
+  const total = DB.slicesOf(wid).filter(s=>!s.data.image).length;
+  if(!total){ toast("Every entry already has a picture","ok"); return; }
+
+  let cur = startId && DB.get(startId) && !DB.get(startId).data.image ? startId : (pending()[0]||{}).id;
+  let busy = false;
+
+  const modal = openModal({
+    icon:"image", title:"Add pictures", sub:`${total} to go`,
+    okLabel:"Done", hideCancel:true,
+    extra:`<button class="btn sm" id="fillskip">Skip this one</button>`,
+    body:`<div id="fillbody"></div>`,
+    onOpen(root){
+      document.addEventListener("paste", onPaste, true);
+      $("#fillskip", root).addEventListener("click", ()=>{
+        if(cur) skipped.add(cur);
+        advance(); draw(root);
+      });
+      draw(root);
+    },
+    onClose(){
+      document.removeEventListener("paste", onPaste, true);
+      renderPanel(); refreshWheel();
+    },
+  });
+
+  function advance(){
+    const left = pending();
+    cur = left.length ? left[0].id : null;
+  }
+
+  function draw(root){
+    const box = $("#fillbody", root);
+    const left = pending().length;
+    const filled = total - DB.slicesOf(wid).filter(s=>!s.data.image).length;
+    const pct = total ? Math.round(filled/total*100) : 100;
+
+    if(!cur || !left){
+      box.innerHTML = `<div class="fill-prog"><i style="width:${pct}%"></i></div>
+        <div class="fill-done">${svg("check")}
+          <div><b>${filled} of ${total}</b> filled${skipped.size?` · ${skipped.size} skipped`:""}</div>
+        </div>`;
+      const s2 = $(".mod-h .sub", root); if(s2) s2.textContent = "Finished";
+      $("#fillskip", root)?.classList.add("hidden");
+      return;
+    }
+
+    const entry = DB.get(cur);
+    box.innerHTML = `<div class="fill-prog"><i style="width:${pct}%"></i></div>
+      <div class="fill-for">Picture ${Math.min(filled+1,total)} of ${total}</div>
+      <div class="fill-name">${h(entry.data.name || "Untitled")}</div>
+      <div class="fill-zone" id="fillzone">${svg("image")}
+        <div>Copy a picture, then press <kbd>${PASTE_KEY}</kbd><br>or drag one in from another tab</div>
+      </div>
+      <div class="fill-acts">
+        <button class="btn primary" id="fillweb">${svg("external")} ${h(webSearchName())}</button>
+        <button class="btn" id="fillfile">${svg("camera")} From this computer</button>
+        <button class="btn" id="fillcat">${svg("search")} Catalogues</button>
+      </div>
+      ${skipped.size?`<div class="fill-skipped">${skipped.size} skipped — they stay on the wheel without a picture.</div>`:""}`;
+
+    const sub = $(".mod-h .sub", root);
+    if(sub) sub.textContent = `${left} still to go`;
+
+    $("#fillweb", root).addEventListener("click", ()=>webSearchFor(entry.data.name));
+    $("#fillfile", root).addEventListener("click", async ()=>{
+      const src = await pickOneImage();
+      if(!src) return;
+      await applyImage(cur, { src, linked:false }, null);
+      took(root, "Picture added");
+    });
+    $("#fillcat", root).addEventListener("click", ()=>{
+      const target = cur;
+      modal.close();
+      openImagePicker(target, ()=>{});
+    });
+
+    const zone = $("#fillzone", root);
+    let depth = 0;
+    const carries = ev => [...(ev.dataTransfer?.types||[])].some(t=>/Files|text\/uri-list|text\/html/.test(t));
+    zone.addEventListener("dragenter", ev=>{ if(carries(ev)){ ev.preventDefault(); depth++; zone.classList.add("over"); } });
+    zone.addEventListener("dragover",  ev=>{ if(carries(ev)){ ev.preventDefault(); ev.dataTransfer.dropEffect="copy"; } });
+    zone.addEventListener("dragleave", ()=>{ if(--depth<=0){ depth=0; zone.classList.remove("over"); } });
+    zone.addEventListener("drop", async ev=>{
+      ev.preventDefault(); depth=0; zone.classList.remove("over");
+      if(busy) return;
+      busy = true;
+      const dt = ev.dataTransfer;
+      const count = (dt.files||[]).length || 1;
+      working(true, count);
+      try{ await take(root, await imagesFromTransfer(dt)); }
+      finally{ busy = false; }
+    });
+  }
+
+  /** Show the drop zone working, so a paste never looks like it was ignored. */
+  function working(on, n){
+    const zone = $("#fillzone");
+    if(!zone) return;
+    zone.classList.toggle("busy", on);
+    if(on) zone.innerHTML = `<span class="spin" style="width:26px;height:26px"></span>
+      <div>Adding ${n>1?n+" pictures":"the picture"}…</div>`;
+  }
+
+  /** Apply one or more images from here onwards, then move on. */
+  async function take(root, got){
+    if(!got || !got.length){ toast("No picture in what you dropped","err"); return; }
+    let n = 0, linked = 0;
+    for(const g of got){
+      if(!cur) break;
+      await applyImage(cur, g, null);
+      n++; if(g.linked) linked++;
+      advance();
+    }
+    took(root, n > 1 ? `${n} pictures added` : (linked ? "Picture linked from the web" : "Picture added"), false);
+  }
+  function took(root, msg, step=true){
+    if(step) advance();
+    toast(msg, "ok");
+    renderPanel(); refreshWheel();
+    draw(root);
+  }
+
+  async function onPaste(ev){
+    if(busy) return;
+    const dt = ev.clipboardData;
+    const count = (dt?.files||[]).length;
+    if(!count && !/image|text\/uri-list|text\/html/.test([...(dt?.types||[])].join(" "))) return;
+    ev.preventDefault(); ev.stopPropagation();
+    busy = true;
+    working(true, count || 1);
+    try{
+      const got = await imagesFromTransfer(dt);
+      if(!got.length){ toast("Nothing pasteable on the clipboard","err"); draw(modal.root); return; }
+      await take(modal.root, got);
+    }finally{ busy = false; }
   }
 }
 
@@ -2883,7 +3100,8 @@ function openHelp(){
         <ol class="steps">
           <li>Make a wheel, then type entries into the box on the right — <b>Enter</b> adds one and keeps the box focused, so you can rattle off a long list.</li>
           <li>Give an entry a picture with the little swatch beside its name. The picture is what fills the screen when the wheel lands on it.</li>
-          <li>You don't have to go and fetch pictures yourself. The swatch opens a search across <b>Wikimedia</b> and <b>Openverse</b>, already filled in with the entry's name — click a result and it's done. You can also <b>paste</b> one with <code>${PASTE_KEY}</code> or <b>drag</b> one from another browser tab, either into that dialog or straight onto a row in the list. When several entries need pictures it offers to walk you to the next one.</li>
+          <li>The quickest way to picture a whole wheel is <b>Add pictures</b> at the bottom of the entry list. It shows one entry at a time with a button that opens an image search for that name — copy a picture there, press <code>${PASTE_KEY}</code>, and it fills that entry and moves to the next. A screen grab works just as well as a copied image.</li>
+          <li>For a single entry, the swatch beside its name opens the same options: a web search, a keyless search across <b>Wikimedia</b> and <b>Openverse</b>, a file from this computer, or a paste. You can also <b>drag</b> a picture from another tab straight onto a row — and dropping several at once fills that row and the ones below it.</li>
           <li>Press <b>Spin</b>, the space bar, or click the wheel itself.</li>
         </ol>
       </div>
